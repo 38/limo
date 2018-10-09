@@ -13,6 +13,29 @@ pub struct Scanner {
     common_rl : u32
 }
 
+impl Drop for Scanner {
+    fn drop(&mut self) 
+    {
+        if self.iter != null_mut() 
+        {
+            unsafe { hts_itr_destroy(self.iter) };
+            self.iter = null_mut();
+        }
+
+        if self.idx != null_mut()
+        {
+            unsafe { hts_idx_destroy(self.idx) };
+            self.idx = null_mut();
+        }
+
+        if self.fp != null_mut()
+        {
+            unsafe { hts_close(self.fp) };
+            self.fp = null_mut();
+        }
+    }
+}
+
 impl Scanner {
     pub fn new<'c,'b>(path:&'c str, chrom:u32, reference:Option<&'b str>) -> Result<Self, ()>
     {
