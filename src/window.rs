@@ -1,5 +1,6 @@
 use std::ops::{Add, Sub};
 
+#[allow(dead_code)]
 pub struct Window<T> where
     T : Sized + Default + Clone,
     T : Add<Output = T>,
@@ -9,6 +10,8 @@ pub struct Window<T> where
     ext: Vec<T>
 }
 
+
+#[allow(dead_code)]
 impl <T> Window<T> where
     T : Sized + Default + Clone,
     T : Add<Output = T>,

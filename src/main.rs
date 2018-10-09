@@ -1,35 +1,21 @@
 mod hts;
 mod window;
-mod scanner;
+mod bamfile;
 
-use self::scanner::Scanner;
+use self::bamfile::BamFile;
 /*use self::hts::{hts_open, hts_close, sam_hdr_read, sam_index_load, bam_read1, bam_init1};
 use std::ffi::CString;*/
-fn main() 
+fn main() -> Result<(), ()>
 {
-    let scanner = Scanner::new("/home/haohou/base2/lumpy-sv-2/lumpy_tests/rice/AL87.discordant.sort.bam", 1, None);
+    let bam = BamFile::new("/home/haohou/base2/lumpy-sv-2/lumpy_tests/rice/AL87.discordant.sort.bam", 1, None)?;
 
-    println!("{:?}", scanner.is_ok());
-    /*
-    let fp = unsafe{hts_open(CString::new("/home/haohou/base2/lumpy-sv-2/lumpy_tests/rice/AL87.discordant.sort.bam").unwrap().as_ptr(),
-                             CString::new("rb").unwrap().as_ptr())};
-
-    println!("{:?}", fp);
-
-    let hdr  = unsafe{sam_hdr_read(fp)};
-
-    let read = unsafe{bam_init1()};
-
-    println!("{}", unsafe{bam_read1((*fp).fp.bgzf, read)});
-
-    println!("Pos = {}", unsafe{(*read).core.pos});
-    
-    let read = unsafe{bam_init1()};
-
-    println!("{}", unsafe{bam_read1((*fp).fp.bgzf, read)});
-
-    println!("Pos = {}", unsafe{(*read).core.pos});
-
-    unsafe{ hts_close(fp) };
-    */
+    for al in bam.try_iter()? 
+    {
+       //println!("{} {} {} {} {}", al.begin(), al.end(), al.length(), al.mqual(), al.is_split_read()); 
+       if al.is_split_read() 
+       {
+           println!("aaa");
+       }
+    }
+    Ok(())
 }
