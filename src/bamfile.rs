@@ -1,12 +1,123 @@
 use super::hts::*; 
 use std::ffi::{CString, c_void};
 use std::ptr::{null_mut, null};
+use std::ops::Index;
 
 #[allow(dead_code)]
 pub struct Alignment<'a> {
     data : &'a bam1_t
 }
 
+#[derive(Debug)]
+pub enum Nucleotide { A, C, G, T, N }
+
+static A : Nucleotide = Nucleotide::A;
+static C : Nucleotide = Nucleotide::C;
+static G : Nucleotide = Nucleotide::G;
+static T : Nucleotide = Nucleotide::T;
+static N : Nucleotide = Nucleotide::N;
+
+#[derive(Debug)]
+pub enum Cigar {
+    Match(u32),
+    Insert(u32),
+    Delete(u32),
+    Skip(u32),
+    Soft(u32),
+    Hard(u32),
+    Pad(u32),
+    Equal(u32),
+    Diff(u32),
+    Back(u32)
+}
+
+impl Cigar {
+    fn from_alignment(al:&Alignment, idx:usize) -> Option<Cigar> 
+    {
+        if idx > (al.data.core.n_cigar as usize) { return None } 
+        let cigar_num : u32 = unsafe { *(al.data.data.offset(al.data.core.l_qname as isize + idx as isize) as *const u32)};
+
+        let cigar_op = cigar_num & BAM_CIGAR_MASK;
+        let cigar_len = cigar_num >> BAM_CIGAR_SHIFT;
+
+        match cigar_op {
+            BAM_CMATCH => Some(Cigar::Match(cigar_len)),
+            BAM_CINS => Some(Cigar::Insert(cigar_len)),
+            BAM_CDEL => Some(Cigar::Delete(cigar_len)),
+            BAM_CREF_SKIP => Some(Cigar::Skip(cigar_len)),
+            BAM_CSOFT_CLIP => Some(Cigar::Soft(cigar_len)),
+            BAM_CHARD_CLIP => Some(Cigar::Hard(cigar_len)),
+            BAM_CPAD => Some(Cigar::Pad(cigar_len)),
+            BAM_CEQUAL => Some(Cigar::Equal(cigar_len)),
+            BAM_CDIFF => Some(Cigar::Diff(cigar_len)),
+            BAM_CBACK => Some(Cigar::Back(cigar_len)),
+            _ => None
+        }
+    }
+
+    fn in_alignment(&self) -> bool 
+    {
+        match self {
+            Cigar::Match(_) | Cigar::Insert(_) | Cigar::Soft(_) | Cigar::Equal(_) | Cigar::Diff(_) => true,
+            _ => false
+        }
+    }
+    
+    fn in_reference(&self) -> bool 
+    {
+        match self {
+            Cigar::Match(_) | Cigar::Delete(_) | Cigar::Skip(_) | Cigar::Equal(_) | Cigar::Diff(_) => true,
+            _ => false
+        }
+    }
+}
+
+impl From<u32> for &'static Nucleotide {
+    fn from(what:u32) -> Self 
+    {
+        match what {
+            1 => &A,
+            2 => &C,
+            4 => &G,
+            8 => &T,
+            _ => &N
+        }
+    }
+}
+
+impl Into<char> for Nucleotide {
+    fn into(self) -> char 
+    {
+        match self {
+            Nucleotide::A => 'A',
+            Nucleotide::C => 'C',
+            Nucleotide::G => 'G',
+            Nucleotide::T => 'T',
+            Nucleotide::N => 'N'
+        }
+    }
+}
+
+pub struct Sequence<'a> {
+    alignment : &'a Alignment<'a>
+}
+
+impl <'a> Sequence<'a> {
+    pub fn size(&self) -> usize { self.alignment.length() as usize }
+}
+
+impl <'a> Index<usize> for Sequence<'a> {
+    type Output = Nucleotide;
+    fn index(&self, offset : usize) -> &Nucleotide 
+    {
+        let hts_obj = self.alignment.data;
+        let seq = unsafe { hts_obj.data.offset(hts_obj.core.n_cigar as isize * 4 + (hts_obj.core.l_qname as isize) + offset as isize / 2) };
+        let numeric : u32 = if offset % 2 == 0 { (unsafe { *seq } as u32) >> 4 }  else  { (unsafe { * seq } as u32) & 0xf };
+        return From::from(numeric);
+    }
+}
+
+#[allow(dead_code)]
 impl <'a> Alignment<'a> {
     pub fn begin(&self) -> u32 { self.data.core.pos as u32 }
     pub fn end(&self) -> u32 { (self.data.core.pos + self.data.core.l_qseq) as u32 }
@@ -18,6 +129,8 @@ impl <'a> Alignment<'a> {
         bam_aux_get(self.data as *const bam1_t, tag_array) 
     }
     pub fn is_split_read(&self) -> bool { return unsafe{ self.read_tag("SA") } != null(); }
+    pub fn sequence(&self) -> Sequence { Sequence { alignment : self } }
+    pub fn cigar(&self, idx:usize) -> Option<Cigar> { Cigar::from_alignment(self, idx) }
 }
 
 #[allow(dead_code)]
@@ -121,9 +234,16 @@ impl BamFile {
     }
 
     #[allow(dead_code)]
-    pub fn try_iter(&self) -> Result<BamFileIter, ()>
+    pub fn try_iter(&self) -> Result<BamFileIter, ()> { self.try_iter_range(0, self.length) }
+
+    #[allow(dead_code)]
+    pub fn try_iter_range(&self, begin:usize, end:usize) -> Result<BamFileIter, () >
     {
-        let iter = unsafe{ sam_itr_queryi(self.idx, self.chrom_id as i32, 0,  self.length as i32) };
+        let left = begin;
+
+        let right = if end > self.length { self.length } else { end };
+
+        let iter = unsafe{ sam_itr_queryi(self.idx, self.chrom_id as i32, left as i32,  right as i32) };
 
         if iter == null_mut() 
         {

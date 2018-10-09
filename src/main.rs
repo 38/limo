@@ -12,10 +12,7 @@ fn main() -> Result<(), ()>
     for al in bam.try_iter()? 
     {
        //println!("{} {} {} {} {}", al.begin(), al.end(), al.length(), al.mqual(), al.is_split_read()); 
-       if al.is_split_read() 
-       {
-           println!("aaa");
-       }
+       println!("{:?}", al.cigar(0));
     }
     Ok(())
 }
