@@ -165,7 +165,7 @@ mod window_test {
             assert_eq!(actual, *expected);
         }
         
-        let result1 : Vec<i32> = win.iter(1).collect();
+        let result1 : Vec<i64> = win.iter(1).collect();
 
         let exp1 = [1, 3, 4, 5, 4, 2, 2, 2, 0, 0, 0];
 
