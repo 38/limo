@@ -12,7 +12,13 @@ fn main() -> Result<(), ()>
     for al in bam.try_iter()? 
     {
        //println!("{} {} {} {} {}", al.begin(), al.end(), al.length(), al.mqual(), al.is_split_read()); 
-       println!("{:?}", al.cigar(0));
+       //println!("{:?}", al.cigar(0));
+       let alignment = al.alignment();
+
+       for map in alignment 
+       {
+           println!("{:?}", map);
+       }
     }
     Ok(())
 }

@@ -8,6 +8,72 @@ pub struct Alignment<'a> {
     data : &'a bam1_t
 }
 
+pub struct MapInfoIter<'a> {
+    ref_ofs  : u32,
+    read_ofs : u32,
+    seq      : Sequence<'a>,
+    cigar_idx: u32,
+    cigar    : Cigar,
+    alignment: &'a Alignment<'a>
+}
+
+#[derive(Debug)]
+pub struct MapInfo {
+    read : Option<Nucleotide>,
+    refs : bool
+}
+
+impl <'a> MapInfoIter<'a> {
+    fn new(al:&'a Alignment) -> MapInfoIter<'a> 
+    {
+        return MapInfoIter {
+            ref_ofs : 0,
+            read_ofs : 0,
+            seq : al.sequence(),
+            cigar_idx : 0,
+            cigar : Cigar{ op : CigarOps::Match, len : 0 },
+            alignment : al
+        };
+    }
+}
+
+impl <'a> Iterator for MapInfoIter<'a> {
+    type Item = MapInfo;
+    fn next(&mut self) -> Option<Self::Item>
+    {
+        if self.cigar.len == 0 
+        {
+            if let Some(what) = self.alignment.cigar(self.cigar_idx as usize)
+            {
+                self.cigar = what;
+            }
+            else 
+            {
+                return None;
+            }
+            self.cigar_idx += 1;
+        }
+        
+        self.cigar.len -= 1;
+
+        let next_refs = self.cigar.in_reference();
+        let next_read = if self.cigar.in_alignment() { 
+            if self.read_ofs < (self.seq.size() as u32) { 
+                Some(Clone::clone(&self.seq[self.read_ofs as usize])) 
+            } else { None }
+        } else { None };
+
+        if next_read.is_some() { self.read_ofs += 1; }
+        if next_refs { self.ref_ofs += 1; }
+
+        return Some(MapInfo {
+            read : next_read,
+            refs : next_refs
+        });
+    }
+}
+
+#[derive(Clone)]
 #[derive(Debug)]
 pub enum Nucleotide { A, C, G, T, N }
 
@@ -18,55 +84,65 @@ static T : Nucleotide = Nucleotide::T;
 static N : Nucleotide = Nucleotide::N;
 
 #[derive(Debug)]
-pub enum Cigar {
-    Match(u32),
-    Insert(u32),
-    Delete(u32),
-    Skip(u32),
-    Soft(u32),
-    Hard(u32),
-    Pad(u32),
-    Equal(u32),
-    Diff(u32),
-    Back(u32)
+pub enum CigarOps {
+    Match,
+    Insert,
+    Delete,
+    Skip,
+    Soft,
+    Hard,
+    Pad,
+    Equal,
+    Diff,
+    Back
+}
+
+#[derive(Debug)]
+pub struct Cigar {
+    op  : CigarOps,
+    len : u32
 }
 
 impl Cigar {
+    fn new(ops:CigarOps, len:u32) -> Cigar 
+    {
+        Cigar { op : ops, len : len }
+    }
     fn from_alignment(al:&Alignment, idx:usize) -> Option<Cigar> 
     {
-        if idx > (al.data.core.n_cigar as usize) { return None } 
-        let cigar_num : u32 = unsafe { *(al.data.data.offset(al.data.core.l_qname as isize + idx as isize) as *const u32)};
+        if idx >= (al.data.core.n_cigar as usize) { return None } 
+        let cigar_num : u32 = unsafe { *(al.data.data.offset(al.data.core.l_qname as isize + (idx * 4) as isize) as *const u32)};
 
         let cigar_op = cigar_num & BAM_CIGAR_MASK;
         let cigar_len = cigar_num >> BAM_CIGAR_SHIFT;
 
         match cigar_op {
-            BAM_CMATCH => Some(Cigar::Match(cigar_len)),
-            BAM_CINS => Some(Cigar::Insert(cigar_len)),
-            BAM_CDEL => Some(Cigar::Delete(cigar_len)),
-            BAM_CREF_SKIP => Some(Cigar::Skip(cigar_len)),
-            BAM_CSOFT_CLIP => Some(Cigar::Soft(cigar_len)),
-            BAM_CHARD_CLIP => Some(Cigar::Hard(cigar_len)),
-            BAM_CPAD => Some(Cigar::Pad(cigar_len)),
-            BAM_CEQUAL => Some(Cigar::Equal(cigar_len)),
-            BAM_CDIFF => Some(Cigar::Diff(cigar_len)),
-            BAM_CBACK => Some(Cigar::Back(cigar_len)),
+            BAM_CMATCH => Some(Cigar::new(CigarOps::Match, cigar_len)),
+            BAM_CINS => Some(Cigar::new(CigarOps::Insert, cigar_len)),
+            BAM_CDEL => Some(Cigar::new(CigarOps::Delete, cigar_len)),
+            BAM_CREF_SKIP => Some(Cigar::new(CigarOps::Skip, cigar_len)),
+            BAM_CSOFT_CLIP => Some(Cigar::new(CigarOps::Soft, cigar_len)),
+            BAM_CHARD_CLIP => Some(Cigar::new(CigarOps::Hard, cigar_len)),
+            BAM_CPAD => Some(Cigar::new(CigarOps::Pad, cigar_len)),
+            BAM_CEQUAL => Some(Cigar::new(CigarOps::Equal, cigar_len)),
+            BAM_CDIFF => Some(Cigar::new(CigarOps::Diff, cigar_len)),
+            BAM_CBACK => Some(Cigar::new(CigarOps::Back, cigar_len)),
             _ => None
         }
     }
 
     fn in_alignment(&self) -> bool 
     {
-        match self {
-            Cigar::Match(_) | Cigar::Insert(_) | Cigar::Soft(_) | Cigar::Equal(_) | Cigar::Diff(_) => true,
+        match self.op {
+            CigarOps::Match | CigarOps::Insert | CigarOps::Soft | CigarOps::Equal | CigarOps::Diff => true,
             _ => false
         }
     }
     
     fn in_reference(&self) -> bool 
     {
-        match self {
-            Cigar::Match(_) | Cigar::Delete(_) | Cigar::Skip(_) | Cigar::Equal(_) | Cigar::Diff(_) => true,
+        match self.op {
+            CigarOps::Match | CigarOps::Delete | CigarOps::Skip | CigarOps::Equal | CigarOps::Diff => true,
             _ => false
         }
     }
@@ -131,6 +207,7 @@ impl <'a> Alignment<'a> {
     pub fn is_split_read(&self) -> bool { return unsafe{ self.read_tag("SA") } != null(); }
     pub fn sequence(&self) -> Sequence { Sequence { alignment : self } }
     pub fn cigar(&self, idx:usize) -> Option<Cigar> { Cigar::from_alignment(self, idx) }
+    pub fn alignment(&self) -> MapInfoIter { MapInfoIter::new(self) }
 }
 
 #[allow(dead_code)]
