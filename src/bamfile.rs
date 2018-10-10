@@ -14,11 +14,13 @@ pub struct MapInfoIter<'a> {
     seq      : Sequence<'a>,
     cigar_idx: u32,
     cigar    : Cigar,
+    count    : u32,
     alignment: &'a Alignment<'a>
 }
 
 #[derive(Debug)]
 pub struct MapInfo {
+    idx  : u32,
     read : Option<Nucleotide>,
     refs : bool
 }
@@ -32,7 +34,8 @@ impl <'a> MapInfoIter<'a> {
             seq : al.sequence(),
             cigar_idx : 0,
             cigar : Cigar{ op : CigarOps::Match, len : 0 },
-            alignment : al
+            alignment : al,
+            count : 0
         };
     }
 }
@@ -56,6 +59,9 @@ impl <'a> Iterator for MapInfoIter<'a> {
         
         self.cigar.len -= 1;
 
+        let idx = self.count;
+        self.count += 1;
+
         let next_refs = self.cigar.in_reference();
         let next_read = if self.cigar.in_alignment() { 
             if self.read_ofs < (self.seq.size() as u32) { 
@@ -68,7 +74,8 @@ impl <'a> Iterator for MapInfoIter<'a> {
 
         return Some(MapInfo {
             read : next_read,
-            refs : next_refs
+            refs : next_refs,
+            idx  : idx
         });
     }
 }
