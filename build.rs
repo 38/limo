@@ -10,9 +10,10 @@ fn create_hts_bindings() -> Result<(), ()>
         bindgen::Builder::default()
             .header("include/htslib_wrap.h")
             .clang_arg("-Ihtslib/htslib")
+            .layout_tests(false)
             .generate()?
-            .write_to_file("generated/htslib.rs").
-            expect("Unable to write the generated file");
+            .write_to_file("generated/htslib.rs")
+            .expect("Unable to write the generated file");
     }
     Ok(())
 }
@@ -31,18 +32,4 @@ fn main() -> Result<(), ()>
     println!("cargo:rustc-link-lib=lzma");
     println!("cargo:rustc-link-lib=pthread");
     Ok(())
-    /*if let Ok(search_path) = env::var("PSTD_LIB_PATH")
-    {
-        println!("cargo:rustc-link-search={}", search_path);
-    }
-    else if let Some(lib_path) = search_for_pstd_lib() 
-    {
-        println!("cargo:rustc-link-search={}", lib_path);
-    }
-    else
-    {
-        eprintln!("Warn: Cannot find libpstd.so, plumber-rs crate could not be built.");
-        eprintln!("Hint: make sure you have plumber intalled or try to set PSTD_LIB_PATH environment variable");
-    }
-    println!("cargo:rustc-link-lib=pstd");*/
 }

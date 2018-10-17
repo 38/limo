@@ -226,7 +226,6 @@ pub const FT_VCF_GZ: u32 = 3;
 pub const FT_BCF: u32 = 4;
 pub const FT_BCF_GZ: u32 = 5;
 pub const FT_STDIN: u32 = 8;
-pub const SAM_FORMAT_VERSION: &'static [u8; 4usize] = b"1.6\0";
 pub const BAM_CMATCH: u32 = 0;
 pub const BAM_CINS: u32 = 1;
 pub const BAM_CDEL: u32 = 2;
@@ -302,29 +301,6 @@ pub type __pid_t = ::std::os::raw::c_int;
 pub struct __fsid_t {
     pub __val: [::std::os::raw::c_int; 2usize],
 }
-#[test]
-fn bindgen_test_layout___fsid_t() {
-    assert_eq!(
-        ::std::mem::size_of::<__fsid_t>(),
-        8usize,
-        concat!("Size of: ", stringify!(__fsid_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<__fsid_t>(),
-        4usize,
-        concat!("Alignment of ", stringify!(__fsid_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<__fsid_t>())).__val as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(__fsid_t),
-            "::",
-            stringify!(__val)
-        )
-    );
-}
 pub type __clock_t = ::std::os::raw::c_long;
 pub type __rlim_t = ::std::os::raw::c_ulong;
 pub type __rlim64_t = ::std::os::raw::c_ulong;
@@ -390,29 +366,6 @@ pub type __sig_atomic_t = ::std::os::raw::c_int;
 pub struct __sigset_t {
     pub __val: [::std::os::raw::c_ulong; 16usize],
 }
-#[test]
-fn bindgen_test_layout___sigset_t() {
-    assert_eq!(
-        ::std::mem::size_of::<__sigset_t>(),
-        128usize,
-        concat!("Size of: ", stringify!(__sigset_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<__sigset_t>(),
-        8usize,
-        concat!("Alignment of ", stringify!(__sigset_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<__sigset_t>())).__val as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(__sigset_t),
-            "::",
-            stringify!(__val)
-        )
-    );
-}
 pub type sigset_t = __sigset_t;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -420,77 +373,11 @@ pub struct timespec {
     pub tv_sec: __time_t,
     pub tv_nsec: __syscall_slong_t,
 }
-#[test]
-fn bindgen_test_layout_timespec() {
-    assert_eq!(
-        ::std::mem::size_of::<timespec>(),
-        16usize,
-        concat!("Size of: ", stringify!(timespec))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<timespec>(),
-        8usize,
-        concat!("Alignment of ", stringify!(timespec))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<timespec>())).tv_sec as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(timespec),
-            "::",
-            stringify!(tv_sec)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<timespec>())).tv_nsec as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(timespec),
-            "::",
-            stringify!(tv_nsec)
-        )
-    );
-}
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct timeval {
     pub tv_sec: __time_t,
     pub tv_usec: __suseconds_t,
-}
-#[test]
-fn bindgen_test_layout_timeval() {
-    assert_eq!(
-        ::std::mem::size_of::<timeval>(),
-        16usize,
-        concat!("Size of: ", stringify!(timeval))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<timeval>(),
-        8usize,
-        concat!("Alignment of ", stringify!(timeval))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<timeval>())).tv_sec as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(timeval),
-            "::",
-            stringify!(tv_sec)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<timeval>())).tv_usec as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(timeval),
-            "::",
-            stringify!(tv_usec)
-        )
-    );
 }
 pub type suseconds_t = __suseconds_t;
 pub type __fd_mask = ::std::os::raw::c_long;
@@ -498,29 +385,6 @@ pub type __fd_mask = ::std::os::raw::c_long;
 #[derive(Debug, Copy, Clone)]
 pub struct fd_set {
     pub __fds_bits: [__fd_mask; 16usize],
-}
-#[test]
-fn bindgen_test_layout_fd_set() {
-    assert_eq!(
-        ::std::mem::size_of::<fd_set>(),
-        128usize,
-        concat!("Size of: ", stringify!(fd_set))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<fd_set>(),
-        8usize,
-        concat!("Alignment of ", stringify!(fd_set))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<fd_set>())).__fds_bits as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(fd_set),
-            "::",
-            stringify!(__fds_bits)
-        )
-    );
 }
 pub type fd_mask = __fd_mask;
 extern "C" {
@@ -566,77 +430,11 @@ pub union pthread_attr_t {
     pub __align: ::std::os::raw::c_long,
     _bindgen_union_align: [u64; 7usize],
 }
-#[test]
-fn bindgen_test_layout_pthread_attr_t() {
-    assert_eq!(
-        ::std::mem::size_of::<pthread_attr_t>(),
-        56usize,
-        concat!("Size of: ", stringify!(pthread_attr_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_attr_t>(),
-        8usize,
-        concat!("Alignment of ", stringify!(pthread_attr_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_attr_t>())).__size as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_attr_t),
-            "::",
-            stringify!(__size)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_attr_t>())).__align as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_attr_t),
-            "::",
-            stringify!(__align)
-        )
-    );
-}
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct __pthread_internal_list {
     pub __prev: *mut __pthread_internal_list,
     pub __next: *mut __pthread_internal_list,
-}
-#[test]
-fn bindgen_test_layout___pthread_internal_list() {
-    assert_eq!(
-        ::std::mem::size_of::<__pthread_internal_list>(),
-        16usize,
-        concat!("Size of: ", stringify!(__pthread_internal_list))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<__pthread_internal_list>(),
-        8usize,
-        concat!("Alignment of ", stringify!(__pthread_internal_list))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<__pthread_internal_list>())).__prev as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(__pthread_internal_list),
-            "::",
-            stringify!(__prev)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<__pthread_internal_list>())).__next as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(__pthread_internal_list),
-            "::",
-            stringify!(__next)
-        )
-    );
 }
 pub type __pthread_list_t = __pthread_internal_list;
 #[repr(C)]
@@ -659,208 +457,12 @@ pub struct pthread_mutex_t___pthread_mutex_s {
     pub __elision: ::std::os::raw::c_short,
     pub __list: __pthread_list_t,
 }
-#[test]
-fn bindgen_test_layout_pthread_mutex_t___pthread_mutex_s() {
-    assert_eq!(
-        ::std::mem::size_of::<pthread_mutex_t___pthread_mutex_s>(),
-        40usize,
-        concat!("Size of: ", stringify!(pthread_mutex_t___pthread_mutex_s))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_mutex_t___pthread_mutex_s>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(pthread_mutex_t___pthread_mutex_s)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_mutex_t___pthread_mutex_s>())).__lock as *const _
-                as usize
-        },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_mutex_t___pthread_mutex_s),
-            "::",
-            stringify!(__lock)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_mutex_t___pthread_mutex_s>())).__count as *const _
-                as usize
-        },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_mutex_t___pthread_mutex_s),
-            "::",
-            stringify!(__count)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_mutex_t___pthread_mutex_s>())).__owner as *const _
-                as usize
-        },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_mutex_t___pthread_mutex_s),
-            "::",
-            stringify!(__owner)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_mutex_t___pthread_mutex_s>())).__nusers as *const _
-                as usize
-        },
-        12usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_mutex_t___pthread_mutex_s),
-            "::",
-            stringify!(__nusers)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_mutex_t___pthread_mutex_s>())).__kind as *const _
-                as usize
-        },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_mutex_t___pthread_mutex_s),
-            "::",
-            stringify!(__kind)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_mutex_t___pthread_mutex_s>())).__spins as *const _
-                as usize
-        },
-        20usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_mutex_t___pthread_mutex_s),
-            "::",
-            stringify!(__spins)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_mutex_t___pthread_mutex_s>())).__elision as *const _
-                as usize
-        },
-        22usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_mutex_t___pthread_mutex_s),
-            "::",
-            stringify!(__elision)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_mutex_t___pthread_mutex_s>())).__list as *const _
-                as usize
-        },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_mutex_t___pthread_mutex_s),
-            "::",
-            stringify!(__list)
-        )
-    );
-}
-#[test]
-fn bindgen_test_layout_pthread_mutex_t() {
-    assert_eq!(
-        ::std::mem::size_of::<pthread_mutex_t>(),
-        40usize,
-        concat!("Size of: ", stringify!(pthread_mutex_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_mutex_t>(),
-        8usize,
-        concat!("Alignment of ", stringify!(pthread_mutex_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_mutex_t>())).__data as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_mutex_t),
-            "::",
-            stringify!(__data)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_mutex_t>())).__size as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_mutex_t),
-            "::",
-            stringify!(__size)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_mutex_t>())).__align as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_mutex_t),
-            "::",
-            stringify!(__align)
-        )
-    );
-}
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union pthread_mutexattr_t {
     pub __size: [::std::os::raw::c_char; 4usize],
     pub __align: ::std::os::raw::c_int,
     _bindgen_union_align: u32,
-}
-#[test]
-fn bindgen_test_layout_pthread_mutexattr_t() {
-    assert_eq!(
-        ::std::mem::size_of::<pthread_mutexattr_t>(),
-        4usize,
-        concat!("Size of: ", stringify!(pthread_mutexattr_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_mutexattr_t>(),
-        4usize,
-        concat!("Alignment of ", stringify!(pthread_mutexattr_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_mutexattr_t>())).__size as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_mutexattr_t),
-            "::",
-            stringify!(__size)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_mutexattr_t>())).__align as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_mutexattr_t),
-            "::",
-            stringify!(__align)
-        )
-    );
 }
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -882,201 +484,12 @@ pub struct pthread_cond_t__bindgen_ty_1 {
     pub __nwaiters: ::std::os::raw::c_uint,
     pub __broadcast_seq: ::std::os::raw::c_uint,
 }
-#[test]
-fn bindgen_test_layout_pthread_cond_t__bindgen_ty_1() {
-    assert_eq!(
-        ::std::mem::size_of::<pthread_cond_t__bindgen_ty_1>(),
-        48usize,
-        concat!("Size of: ", stringify!(pthread_cond_t__bindgen_ty_1))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_cond_t__bindgen_ty_1>(),
-        8usize,
-        concat!("Alignment of ", stringify!(pthread_cond_t__bindgen_ty_1))
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_cond_t__bindgen_ty_1>())).__lock as *const _ as usize
-        },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_cond_t__bindgen_ty_1),
-            "::",
-            stringify!(__lock)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_cond_t__bindgen_ty_1>())).__futex as *const _ as usize
-        },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_cond_t__bindgen_ty_1),
-            "::",
-            stringify!(__futex)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_cond_t__bindgen_ty_1>())).__total_seq as *const _
-                as usize
-        },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_cond_t__bindgen_ty_1),
-            "::",
-            stringify!(__total_seq)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_cond_t__bindgen_ty_1>())).__wakeup_seq as *const _
-                as usize
-        },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_cond_t__bindgen_ty_1),
-            "::",
-            stringify!(__wakeup_seq)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_cond_t__bindgen_ty_1>())).__woken_seq as *const _
-                as usize
-        },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_cond_t__bindgen_ty_1),
-            "::",
-            stringify!(__woken_seq)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_cond_t__bindgen_ty_1>())).__mutex as *const _ as usize
-        },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_cond_t__bindgen_ty_1),
-            "::",
-            stringify!(__mutex)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_cond_t__bindgen_ty_1>())).__nwaiters as *const _ as usize
-        },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_cond_t__bindgen_ty_1),
-            "::",
-            stringify!(__nwaiters)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_cond_t__bindgen_ty_1>())).__broadcast_seq as *const _
-                as usize
-        },
-        44usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_cond_t__bindgen_ty_1),
-            "::",
-            stringify!(__broadcast_seq)
-        )
-    );
-}
-#[test]
-fn bindgen_test_layout_pthread_cond_t() {
-    assert_eq!(
-        ::std::mem::size_of::<pthread_cond_t>(),
-        48usize,
-        concat!("Size of: ", stringify!(pthread_cond_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_cond_t>(),
-        8usize,
-        concat!("Alignment of ", stringify!(pthread_cond_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_cond_t>())).__data as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_cond_t),
-            "::",
-            stringify!(__data)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_cond_t>())).__size as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_cond_t),
-            "::",
-            stringify!(__size)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_cond_t>())).__align as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_cond_t),
-            "::",
-            stringify!(__align)
-        )
-    );
-}
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union pthread_condattr_t {
     pub __size: [::std::os::raw::c_char; 4usize],
     pub __align: ::std::os::raw::c_int,
     _bindgen_union_align: u32,
-}
-#[test]
-fn bindgen_test_layout_pthread_condattr_t() {
-    assert_eq!(
-        ::std::mem::size_of::<pthread_condattr_t>(),
-        4usize,
-        concat!("Size of: ", stringify!(pthread_condattr_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_condattr_t>(),
-        4usize,
-        concat!("Alignment of ", stringify!(pthread_condattr_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_condattr_t>())).__size as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_condattr_t),
-            "::",
-            stringify!(__size)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_condattr_t>())).__align as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_condattr_t),
-            "::",
-            stringify!(__align)
-        )
-    );
 }
 pub type pthread_key_t = ::std::os::raw::c_uint;
 pub type pthread_once_t = ::std::os::raw::c_int;
@@ -1104,251 +517,12 @@ pub struct pthread_rwlock_t__bindgen_ty_1 {
     pub __pad2: ::std::os::raw::c_ulong,
     pub __flags: ::std::os::raw::c_uint,
 }
-#[test]
-fn bindgen_test_layout_pthread_rwlock_t__bindgen_ty_1() {
-    assert_eq!(
-        ::std::mem::size_of::<pthread_rwlock_t__bindgen_ty_1>(),
-        56usize,
-        concat!("Size of: ", stringify!(pthread_rwlock_t__bindgen_ty_1))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_rwlock_t__bindgen_ty_1>(),
-        8usize,
-        concat!("Alignment of ", stringify!(pthread_rwlock_t__bindgen_ty_1))
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_rwlock_t__bindgen_ty_1>())).__lock as *const _ as usize
-        },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_rwlock_t__bindgen_ty_1),
-            "::",
-            stringify!(__lock)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_rwlock_t__bindgen_ty_1>())).__nr_readers as *const _
-                as usize
-        },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_rwlock_t__bindgen_ty_1),
-            "::",
-            stringify!(__nr_readers)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_rwlock_t__bindgen_ty_1>())).__readers_wakeup as *const _
-                as usize
-        },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_rwlock_t__bindgen_ty_1),
-            "::",
-            stringify!(__readers_wakeup)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_rwlock_t__bindgen_ty_1>())).__writer_wakeup as *const _
-                as usize
-        },
-        12usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_rwlock_t__bindgen_ty_1),
-            "::",
-            stringify!(__writer_wakeup)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_rwlock_t__bindgen_ty_1>())).__nr_readers_queued
-                as *const _ as usize
-        },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_rwlock_t__bindgen_ty_1),
-            "::",
-            stringify!(__nr_readers_queued)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_rwlock_t__bindgen_ty_1>())).__nr_writers_queued
-                as *const _ as usize
-        },
-        20usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_rwlock_t__bindgen_ty_1),
-            "::",
-            stringify!(__nr_writers_queued)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_rwlock_t__bindgen_ty_1>())).__writer as *const _ as usize
-        },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_rwlock_t__bindgen_ty_1),
-            "::",
-            stringify!(__writer)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_rwlock_t__bindgen_ty_1>())).__shared as *const _ as usize
-        },
-        28usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_rwlock_t__bindgen_ty_1),
-            "::",
-            stringify!(__shared)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_rwlock_t__bindgen_ty_1>())).__rwelision as *const _
-                as usize
-        },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_rwlock_t__bindgen_ty_1),
-            "::",
-            stringify!(__rwelision)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_rwlock_t__bindgen_ty_1>())).__pad1 as *const _ as usize
-        },
-        33usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_rwlock_t__bindgen_ty_1),
-            "::",
-            stringify!(__pad1)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_rwlock_t__bindgen_ty_1>())).__pad2 as *const _ as usize
-        },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_rwlock_t__bindgen_ty_1),
-            "::",
-            stringify!(__pad2)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<pthread_rwlock_t__bindgen_ty_1>())).__flags as *const _ as usize
-        },
-        48usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_rwlock_t__bindgen_ty_1),
-            "::",
-            stringify!(__flags)
-        )
-    );
-}
-#[test]
-fn bindgen_test_layout_pthread_rwlock_t() {
-    assert_eq!(
-        ::std::mem::size_of::<pthread_rwlock_t>(),
-        56usize,
-        concat!("Size of: ", stringify!(pthread_rwlock_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_rwlock_t>(),
-        8usize,
-        concat!("Alignment of ", stringify!(pthread_rwlock_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_rwlock_t>())).__data as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_rwlock_t),
-            "::",
-            stringify!(__data)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_rwlock_t>())).__size as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_rwlock_t),
-            "::",
-            stringify!(__size)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_rwlock_t>())).__align as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_rwlock_t),
-            "::",
-            stringify!(__align)
-        )
-    );
-}
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union pthread_rwlockattr_t {
     pub __size: [::std::os::raw::c_char; 8usize],
     pub __align: ::std::os::raw::c_long,
     _bindgen_union_align: u64,
-}
-#[test]
-fn bindgen_test_layout_pthread_rwlockattr_t() {
-    assert_eq!(
-        ::std::mem::size_of::<pthread_rwlockattr_t>(),
-        8usize,
-        concat!("Size of: ", stringify!(pthread_rwlockattr_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_rwlockattr_t>(),
-        8usize,
-        concat!("Alignment of ", stringify!(pthread_rwlockattr_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_rwlockattr_t>())).__size as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_rwlockattr_t),
-            "::",
-            stringify!(__size)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_rwlockattr_t>())).__align as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_rwlockattr_t),
-            "::",
-            stringify!(__align)
-        )
-    );
 }
 pub type pthread_spinlock_t = ::std::os::raw::c_int;
 #[repr(C)]
@@ -1358,78 +532,12 @@ pub union pthread_barrier_t {
     pub __align: ::std::os::raw::c_long,
     _bindgen_union_align: [u64; 4usize],
 }
-#[test]
-fn bindgen_test_layout_pthread_barrier_t() {
-    assert_eq!(
-        ::std::mem::size_of::<pthread_barrier_t>(),
-        32usize,
-        concat!("Size of: ", stringify!(pthread_barrier_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_barrier_t>(),
-        8usize,
-        concat!("Alignment of ", stringify!(pthread_barrier_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_barrier_t>())).__size as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_barrier_t),
-            "::",
-            stringify!(__size)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_barrier_t>())).__align as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_barrier_t),
-            "::",
-            stringify!(__align)
-        )
-    );
-}
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union pthread_barrierattr_t {
     pub __size: [::std::os::raw::c_char; 4usize],
     pub __align: ::std::os::raw::c_int,
     _bindgen_union_align: u32,
-}
-#[test]
-fn bindgen_test_layout_pthread_barrierattr_t() {
-    assert_eq!(
-        ::std::mem::size_of::<pthread_barrierattr_t>(),
-        4usize,
-        concat!("Size of: ", stringify!(pthread_barrierattr_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pthread_barrierattr_t>(),
-        4usize,
-        concat!("Alignment of ", stringify!(pthread_barrierattr_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_barrierattr_t>())).__size as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_barrierattr_t),
-            "::",
-            stringify!(__size)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<pthread_barrierattr_t>())).__align as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pthread_barrierattr_t),
-            "::",
-            stringify!(__align)
-        )
-    );
 }
 pub type wchar_t = ::std::os::raw::c_int;
 #[repr(C)]
@@ -1438,38 +546,6 @@ pub struct max_align_t {
     pub __clang_max_align_nonce1: ::std::os::raw::c_longlong,
     pub __bindgen_padding_0: u64,
     pub __clang_max_align_nonce2: f64,
-}
-#[test]
-fn bindgen_test_layout_max_align_t() {
-    assert_eq!(
-        ::std::mem::size_of::<max_align_t>(),
-        32usize,
-        concat!("Size of: ", stringify!(max_align_t))
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<max_align_t>())).__clang_max_align_nonce1 as *const _ as usize
-        },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(max_align_t),
-            "::",
-            stringify!(__clang_max_align_nonce1)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            &(*(::std::ptr::null::<max_align_t>())).__clang_max_align_nonce2 as *const _ as usize
-        },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(max_align_t),
-            "::",
-            stringify!(__clang_max_align_nonce2)
-        )
-    );
 }
 ///< All logging disabled.
 pub const htsLogLevel_HTS_LOG_OFF: htsLogLevel = 0;
@@ -1531,11 +607,6 @@ pub struct hFILE {
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct hFILE_callback_ops {
-    _unused: [u8; 0],
-}
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
 pub struct hts_tpool {
     _unused: [u8; 0],
 }
@@ -1545,49 +616,6 @@ pub struct __kstring_t {
     pub l: usize,
     pub m: usize,
     pub s: *mut ::std::os::raw::c_char,
-}
-#[test]
-fn bindgen_test_layout___kstring_t() {
-    assert_eq!(
-        ::std::mem::size_of::<__kstring_t>(),
-        24usize,
-        concat!("Size of: ", stringify!(__kstring_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<__kstring_t>(),
-        8usize,
-        concat!("Alignment of ", stringify!(__kstring_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<__kstring_t>())).l as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(__kstring_t),
-            "::",
-            stringify!(l)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<__kstring_t>())).m as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(__kstring_t),
-            "::",
-            stringify!(m)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<__kstring_t>())).s as *const _ as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(__kstring_t),
-            "::",
-            stringify!(s)
-        )
-    );
 }
 pub type kstring_t = __kstring_t;
 pub const htsFormatCategory_unknown_category: htsFormatCategory = 0;
@@ -1638,112 +666,6 @@ pub struct htsFormat__bindgen_ty_1 {
     pub major: ::std::os::raw::c_short,
     pub minor: ::std::os::raw::c_short,
 }
-#[test]
-fn bindgen_test_layout_htsFormat__bindgen_ty_1() {
-    assert_eq!(
-        ::std::mem::size_of::<htsFormat__bindgen_ty_1>(),
-        4usize,
-        concat!("Size of: ", stringify!(htsFormat__bindgen_ty_1))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<htsFormat__bindgen_ty_1>(),
-        2usize,
-        concat!("Alignment of ", stringify!(htsFormat__bindgen_ty_1))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsFormat__bindgen_ty_1>())).major as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsFormat__bindgen_ty_1),
-            "::",
-            stringify!(major)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsFormat__bindgen_ty_1>())).minor as *const _ as usize },
-        2usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsFormat__bindgen_ty_1),
-            "::",
-            stringify!(minor)
-        )
-    );
-}
-#[test]
-fn bindgen_test_layout_htsFormat() {
-    assert_eq!(
-        ::std::mem::size_of::<htsFormat>(),
-        32usize,
-        concat!("Size of: ", stringify!(htsFormat))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<htsFormat>(),
-        8usize,
-        concat!("Alignment of ", stringify!(htsFormat))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsFormat>())).category as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsFormat),
-            "::",
-            stringify!(category)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsFormat>())).format as *const _ as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsFormat),
-            "::",
-            stringify!(format)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsFormat>())).version as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsFormat),
-            "::",
-            stringify!(version)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsFormat>())).compression as *const _ as usize },
-        12usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsFormat),
-            "::",
-            stringify!(compression)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsFormat>())).compression_level as *const _ as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsFormat),
-            "::",
-            stringify!(compression_level)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsFormat>())).specific as *const _ as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsFormat),
-            "::",
-            stringify!(specific)
-        )
-    );
-}
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct htsFile {
@@ -1762,122 +684,6 @@ pub union htsFile__bindgen_ty_1 {
     pub cram: *mut cram_fd,
     pub hfile: *mut hFILE,
     _bindgen_union_align: u64,
-}
-#[test]
-fn bindgen_test_layout_htsFile__bindgen_ty_1() {
-    assert_eq!(
-        ::std::mem::size_of::<htsFile__bindgen_ty_1>(),
-        8usize,
-        concat!("Size of: ", stringify!(htsFile__bindgen_ty_1))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<htsFile__bindgen_ty_1>(),
-        8usize,
-        concat!("Alignment of ", stringify!(htsFile__bindgen_ty_1))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsFile__bindgen_ty_1>())).bgzf as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsFile__bindgen_ty_1),
-            "::",
-            stringify!(bgzf)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsFile__bindgen_ty_1>())).cram as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsFile__bindgen_ty_1),
-            "::",
-            stringify!(cram)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsFile__bindgen_ty_1>())).hfile as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsFile__bindgen_ty_1),
-            "::",
-            stringify!(hfile)
-        )
-    );
-}
-#[test]
-fn bindgen_test_layout_htsFile() {
-    assert_eq!(
-        ::std::mem::size_of::<htsFile>(),
-        96usize,
-        concat!("Size of: ", stringify!(htsFile))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<htsFile>(),
-        8usize,
-        concat!("Alignment of ", stringify!(htsFile))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsFile>())).lineno as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsFile),
-            "::",
-            stringify!(lineno)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsFile>())).line as *const _ as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsFile),
-            "::",
-            stringify!(line)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsFile>())).fn_ as *const _ as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsFile),
-            "::",
-            stringify!(fn_)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsFile>())).fn_aux as *const _ as usize },
-        48usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsFile),
-            "::",
-            stringify!(fn_aux)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsFile>())).fp as *const _ as usize },
-        56usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsFile),
-            "::",
-            stringify!(fp)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsFile>())).format as *const _ as usize },
-        64usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsFile),
-            "::",
-            stringify!(format)
-        )
-    );
 }
 impl htsFile {
     #[inline]
@@ -1990,39 +796,6 @@ pub struct htsThreadPool {
     pub pool: *mut hts_tpool,
     pub qsize: ::std::os::raw::c_int,
 }
-#[test]
-fn bindgen_test_layout_htsThreadPool() {
-    assert_eq!(
-        ::std::mem::size_of::<htsThreadPool>(),
-        16usize,
-        concat!("Size of: ", stringify!(htsThreadPool))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<htsThreadPool>(),
-        8usize,
-        concat!("Alignment of ", stringify!(htsThreadPool))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsThreadPool>())).pool as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsThreadPool),
-            "::",
-            stringify!(pool)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<htsThreadPool>())).qsize as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(htsThreadPool),
-            "::",
-            stringify!(qsize)
-        )
-    );
-}
 pub const sam_fields_SAM_QNAME: sam_fields = 1;
 pub const sam_fields_SAM_FLAG: sam_fields = 2;
 pub const sam_fields_SAM_RNAME: sam_fields = 4;
@@ -2058,8 +831,6 @@ pub const hts_fmt_option_CRAM_OPT_USE_RANS: hts_fmt_option = 17;
 pub const hts_fmt_option_CRAM_OPT_REQUIRED_FIELDS: hts_fmt_option = 18;
 pub const hts_fmt_option_CRAM_OPT_LOSSY_NAMES: hts_fmt_option = 19;
 pub const hts_fmt_option_CRAM_OPT_BASES_PER_SLICE: hts_fmt_option = 20;
-pub const hts_fmt_option_CRAM_OPT_STORE_MD: hts_fmt_option = 21;
-pub const hts_fmt_option_CRAM_OPT_STORE_NM: hts_fmt_option = 22;
 pub const hts_fmt_option_HTS_OPT_COMPRESSION_LEVEL: hts_fmt_option = 100;
 pub const hts_fmt_option_HTS_OPT_NTHREADS: hts_fmt_option = 101;
 pub const hts_fmt_option_HTS_OPT_THREAD_POOL: hts_fmt_option = 102;
@@ -2080,92 +851,6 @@ pub union hts_opt__bindgen_ty_1 {
     pub i: ::std::os::raw::c_int,
     pub s: *mut ::std::os::raw::c_char,
     _bindgen_union_align: u64,
-}
-#[test]
-fn bindgen_test_layout_hts_opt__bindgen_ty_1() {
-    assert_eq!(
-        ::std::mem::size_of::<hts_opt__bindgen_ty_1>(),
-        8usize,
-        concat!("Size of: ", stringify!(hts_opt__bindgen_ty_1))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<hts_opt__bindgen_ty_1>(),
-        8usize,
-        concat!("Alignment of ", stringify!(hts_opt__bindgen_ty_1))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_opt__bindgen_ty_1>())).i as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_opt__bindgen_ty_1),
-            "::",
-            stringify!(i)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_opt__bindgen_ty_1>())).s as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_opt__bindgen_ty_1),
-            "::",
-            stringify!(s)
-        )
-    );
-}
-#[test]
-fn bindgen_test_layout_hts_opt() {
-    assert_eq!(
-        ::std::mem::size_of::<hts_opt>(),
-        32usize,
-        concat!("Size of: ", stringify!(hts_opt))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<hts_opt>(),
-        8usize,
-        concat!("Alignment of ", stringify!(hts_opt))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_opt>())).arg as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_opt),
-            "::",
-            stringify!(arg)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_opt>())).opt as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_opt),
-            "::",
-            stringify!(opt)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_opt>())).val as *const _ as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_opt),
-            "::",
-            stringify!(val)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_opt>())).next as *const _ as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_opt),
-            "::",
-            stringify!(next)
-        )
-    );
 }
 extern "C" {
     pub fn hts_opt_add(
@@ -2250,20 +935,6 @@ extern "C" {
     ///[rw]   .. uncompressed VCF
     pub fn hts_open(
         fn_: *const ::std::os::raw::c_char,
-        mode: *const ::std::os::raw::c_char,
-    ) -> *mut htsFile;
-}
-extern "C" {
-    ///@abstract      Open a SAM/BAM/CRAM/VCF/BCF/etc from stream callbacks
-    ///@param ops     The IO operation callback
-    ///@param mode    The mode string
-    ///@discussion
-    ///See hts_open for description of mode string.
-    ///This function is useful when data sources other than file/pipe
-    ///should be consumed.
-    pub fn hts_open_callback(
-        fn_: *const ::std::os::raw::c_char,
-        ops: *mut hFILE_callback_ops,
         mode: *const ::std::os::raw::c_char,
     ) -> *mut htsFile;
 }
@@ -2405,77 +1076,11 @@ pub struct hts_pair32_t {
     pub beg: u32,
     pub end: u32,
 }
-#[test]
-fn bindgen_test_layout_hts_pair32_t() {
-    assert_eq!(
-        ::std::mem::size_of::<hts_pair32_t>(),
-        8usize,
-        concat!("Size of: ", stringify!(hts_pair32_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<hts_pair32_t>(),
-        4usize,
-        concat!("Alignment of ", stringify!(hts_pair32_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_pair32_t>())).beg as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_pair32_t),
-            "::",
-            stringify!(beg)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_pair32_t>())).end as *const _ as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_pair32_t),
-            "::",
-            stringify!(end)
-        )
-    );
-}
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct hts_pair64_t {
     pub u: u64,
     pub v: u64,
-}
-#[test]
-fn bindgen_test_layout_hts_pair64_t() {
-    assert_eq!(
-        ::std::mem::size_of::<hts_pair64_t>(),
-        16usize,
-        concat!("Size of: ", stringify!(hts_pair64_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<hts_pair64_t>(),
-        8usize,
-        concat!("Alignment of ", stringify!(hts_pair64_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_pair64_t>())).u as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_pair64_t),
-            "::",
-            stringify!(u)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_pair64_t>())).v as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_pair64_t),
-            "::",
-            stringify!(v)
-        )
-    );
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -2483,49 +1088,6 @@ pub struct hts_pair64_max_t {
     pub u: u64,
     pub v: u64,
     pub max: u64,
-}
-#[test]
-fn bindgen_test_layout_hts_pair64_max_t() {
-    assert_eq!(
-        ::std::mem::size_of::<hts_pair64_max_t>(),
-        24usize,
-        concat!("Size of: ", stringify!(hts_pair64_max_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<hts_pair64_max_t>(),
-        8usize,
-        concat!("Alignment of ", stringify!(hts_pair64_max_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_pair64_max_t>())).u as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_pair64_max_t),
-            "::",
-            stringify!(u)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_pair64_max_t>())).v as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_pair64_max_t),
-            "::",
-            stringify!(v)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_pair64_max_t>())).max as *const _ as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_pair64_max_t),
-            "::",
-            stringify!(max)
-        )
-    );
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -2536,79 +1098,6 @@ pub struct hts_reglist_t {
     pub count: u32,
     pub min_beg: u32,
     pub max_end: u32,
-}
-#[test]
-fn bindgen_test_layout_hts_reglist_t() {
-    assert_eq!(
-        ::std::mem::size_of::<hts_reglist_t>(),
-        40usize,
-        concat!("Size of: ", stringify!(hts_reglist_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<hts_reglist_t>(),
-        8usize,
-        concat!("Alignment of ", stringify!(hts_reglist_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_reglist_t>())).reg as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_reglist_t),
-            "::",
-            stringify!(reg)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_reglist_t>())).tid as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_reglist_t),
-            "::",
-            stringify!(tid)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_reglist_t>())).intervals as *const _ as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_reglist_t),
-            "::",
-            stringify!(intervals)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_reglist_t>())).count as *const _ as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_reglist_t),
-            "::",
-            stringify!(count)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_reglist_t>())).min_beg as *const _ as usize },
-        28usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_reglist_t),
-            "::",
-            stringify!(min_beg)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_reglist_t>())).max_end as *const _ as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_reglist_t),
-            "::",
-            stringify!(max_end)
-        )
-    );
 }
 pub type hts_readrec_func = ::std::option::Option<
     unsafe extern "C" fn(
@@ -2652,182 +1141,6 @@ pub struct hts_itr_t__bindgen_ty_1 {
     pub n: ::std::os::raw::c_int,
     pub m: ::std::os::raw::c_int,
     pub a: *mut ::std::os::raw::c_int,
-}
-#[test]
-fn bindgen_test_layout_hts_itr_t__bindgen_ty_1() {
-    assert_eq!(
-        ::std::mem::size_of::<hts_itr_t__bindgen_ty_1>(),
-        16usize,
-        concat!("Size of: ", stringify!(hts_itr_t__bindgen_ty_1))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<hts_itr_t__bindgen_ty_1>(),
-        8usize,
-        concat!("Alignment of ", stringify!(hts_itr_t__bindgen_ty_1))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_t__bindgen_ty_1>())).n as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_t__bindgen_ty_1),
-            "::",
-            stringify!(n)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_t__bindgen_ty_1>())).m as *const _ as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_t__bindgen_ty_1),
-            "::",
-            stringify!(m)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_t__bindgen_ty_1>())).a as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_t__bindgen_ty_1),
-            "::",
-            stringify!(a)
-        )
-    );
-}
-#[test]
-fn bindgen_test_layout_hts_itr_t() {
-    assert_eq!(
-        ::std::mem::size_of::<hts_itr_t>(),
-        80usize,
-        concat!("Size of: ", stringify!(hts_itr_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<hts_itr_t>(),
-        8usize,
-        concat!("Alignment of ", stringify!(hts_itr_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_t>())).tid as *const _ as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_t),
-            "::",
-            stringify!(tid)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_t>())).beg as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_t),
-            "::",
-            stringify!(beg)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_t>())).end as *const _ as usize },
-        12usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_t),
-            "::",
-            stringify!(end)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_t>())).n_off as *const _ as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_t),
-            "::",
-            stringify!(n_off)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_t>())).i as *const _ as usize },
-        20usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_t),
-            "::",
-            stringify!(i)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_t>())).curr_tid as *const _ as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_t),
-            "::",
-            stringify!(curr_tid)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_t>())).curr_beg as *const _ as usize },
-        28usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_t),
-            "::",
-            stringify!(curr_beg)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_t>())).curr_end as *const _ as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_t),
-            "::",
-            stringify!(curr_end)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_t>())).curr_off as *const _ as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_t),
-            "::",
-            stringify!(curr_off)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_t>())).off as *const _ as usize },
-        48usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_t),
-            "::",
-            stringify!(off)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_t>())).readrec as *const _ as usize },
-        56usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_t),
-            "::",
-            stringify!(readrec)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_t>())).bins as *const _ as usize },
-        64usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_t),
-            "::",
-            stringify!(bins)
-        )
-    );
 }
 impl hts_itr_t {
     #[inline]
@@ -2909,49 +1222,6 @@ pub struct aux_key_t {
     pub min_off: u64,
     pub max_off: u64,
 }
-#[test]
-fn bindgen_test_layout_aux_key_t() {
-    assert_eq!(
-        ::std::mem::size_of::<aux_key_t>(),
-        24usize,
-        concat!("Size of: ", stringify!(aux_key_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<aux_key_t>(),
-        8usize,
-        concat!("Alignment of ", stringify!(aux_key_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<aux_key_t>())).key as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(aux_key_t),
-            "::",
-            stringify!(key)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<aux_key_t>())).min_off as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(aux_key_t),
-            "::",
-            stringify!(min_off)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<aux_key_t>())).max_off as *const _ as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(aux_key_t),
-            "::",
-            stringify!(max_off)
-        )
-    );
-}
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct hts_itr_multi_t {
@@ -2971,169 +1241,6 @@ pub struct hts_itr_multi_t {
     pub readrec: hts_readrec_func,
     pub seek: hts_seek_func,
     pub tell: hts_tell_func,
-}
-#[test]
-fn bindgen_test_layout_hts_itr_multi_t() {
-    assert_eq!(
-        ::std::mem::size_of::<hts_itr_multi_t>(),
-        104usize,
-        concat!("Size of: ", stringify!(hts_itr_multi_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<hts_itr_multi_t>(),
-        8usize,
-        concat!("Alignment of ", stringify!(hts_itr_multi_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_multi_t>())).reg_list as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_multi_t),
-            "::",
-            stringify!(reg_list)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_multi_t>())).n_reg as *const _ as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_multi_t),
-            "::",
-            stringify!(n_reg)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_multi_t>())).i as *const _ as usize },
-        20usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_multi_t),
-            "::",
-            stringify!(i)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_multi_t>())).curr_tid as *const _ as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_multi_t),
-            "::",
-            stringify!(curr_tid)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_multi_t>())).curr_intv as *const _ as usize },
-        28usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_multi_t),
-            "::",
-            stringify!(curr_intv)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_multi_t>())).curr_beg as *const _ as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_multi_t),
-            "::",
-            stringify!(curr_beg)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_multi_t>())).curr_end as *const _ as usize },
-        36usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_multi_t),
-            "::",
-            stringify!(curr_end)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_multi_t>())).curr_reg as *const _ as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_multi_t),
-            "::",
-            stringify!(curr_reg)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_multi_t>())).off as *const _ as usize },
-        48usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_multi_t),
-            "::",
-            stringify!(off)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_multi_t>())).n_off as *const _ as usize },
-        56usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_multi_t),
-            "::",
-            stringify!(n_off)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_multi_t>())).curr_off as *const _ as usize },
-        64usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_multi_t),
-            "::",
-            stringify!(curr_off)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_multi_t>())).nocoor_off as *const _ as usize },
-        72usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_multi_t),
-            "::",
-            stringify!(nocoor_off)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_multi_t>())).readrec as *const _ as usize },
-        80usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_multi_t),
-            "::",
-            stringify!(readrec)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_multi_t>())).seek as *const _ as usize },
-        88usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_multi_t),
-            "::",
-            stringify!(seek)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<hts_itr_multi_t>())).tell as *const _ as usize },
-        96usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(hts_itr_multi_t),
-            "::",
-            stringify!(tell)
-        )
-    );
 }
 impl hts_itr_multi_t {
     #[inline]
@@ -3499,8 +1606,7 @@ extern "C" {
         q: *mut f32,
     ) -> ::std::os::raw::c_int;
 }
-/// Probabilistic banded glocal alignment             *
-/// See https://doi.org/10.1093/bioinformatics/btr076 *
+/// Probabilistic banded glocal alignment *
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct probaln_par_t {
@@ -3508,73 +1614,7 @@ pub struct probaln_par_t {
     pub e: f32,
     pub bw: ::std::os::raw::c_int,
 }
-#[test]
-fn bindgen_test_layout_probaln_par_t() {
-    assert_eq!(
-        ::std::mem::size_of::<probaln_par_t>(),
-        12usize,
-        concat!("Size of: ", stringify!(probaln_par_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<probaln_par_t>(),
-        4usize,
-        concat!("Alignment of ", stringify!(probaln_par_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<probaln_par_t>())).d as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(probaln_par_t),
-            "::",
-            stringify!(d)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<probaln_par_t>())).e as *const _ as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(probaln_par_t),
-            "::",
-            stringify!(e)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<probaln_par_t>())).bw as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(probaln_par_t),
-            "::",
-            stringify!(bw)
-        )
-    );
-}
 extern "C" {
-    /// Perform probabilistic banded glocal alignment
-    ///** @param      ref     Reference sequence
-    ///@param      l_ref   Length of reference
-    ///@param      query   Query sequence
-    ///@param      l_query Length of query sequence
-    ///@param      iqual   Query base qualities
-    ///@param      c       Alignment parameters
-    ///@param[out] state   Output alignment
-    ///@param[out] q    Phred scaled posterior probability of state[i] being wrong
-    ///@return     Phred-scaled likelihood score, or INT_MIN on failure.
-    ///
-    ///The reference and query sequences are coded using integers 0,1,2,3,4 for
-    ///bases A,C,G,T,N respectively (N here is for any ambiguity code).
-    ///
-    ///On output, state and q are arrays of length l_query. The higher 30
-    ///bits give the reference position the query base is matched to and the
-    ///lower two bits can be 0 (an alignment match) or 1 (an
-    ///insertion). q[i] gives the phred scaled posterior probability of
-    ///state[i] being wrong.
-    ///
-    ///On failure, errno will be set to EINVAL if the values of l_ref or l_query
-    ///were invalid; or ENOMEM if a memory allocation failed.
-    ///*/
     pub fn probaln_glocal(
         ref_: *const u8,
         l_ref: ::std::os::raw::c_int,
@@ -4128,99 +2168,6 @@ pub struct bam_hdr_t {
     pub text: *mut ::std::os::raw::c_char,
     pub sdict: *mut ::std::os::raw::c_void,
 }
-#[test]
-fn bindgen_test_layout_bam_hdr_t() {
-    assert_eq!(
-        ::std::mem::size_of::<bam_hdr_t>(),
-        56usize,
-        concat!("Size of: ", stringify!(bam_hdr_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<bam_hdr_t>(),
-        8usize,
-        concat!("Alignment of ", stringify!(bam_hdr_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam_hdr_t>())).n_targets as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam_hdr_t),
-            "::",
-            stringify!(n_targets)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam_hdr_t>())).ignore_sam_err as *const _ as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam_hdr_t),
-            "::",
-            stringify!(ignore_sam_err)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam_hdr_t>())).l_text as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam_hdr_t),
-            "::",
-            stringify!(l_text)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam_hdr_t>())).target_len as *const _ as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam_hdr_t),
-            "::",
-            stringify!(target_len)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam_hdr_t>())).cigar_tab as *const _ as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam_hdr_t),
-            "::",
-            stringify!(cigar_tab)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam_hdr_t>())).target_name as *const _ as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam_hdr_t),
-            "::",
-            stringify!(target_name)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam_hdr_t>())).text as *const _ as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam_hdr_t),
-            "::",
-            stringify!(text)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam_hdr_t>())).sdict as *const _ as usize },
-        48usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam_hdr_t),
-            "::",
-            stringify!(sdict)
-        )
-    );
-}
 /// @typedef
 ///@abstract Structure for core alignment information.
 ///@field  tid     chromosome ID, defined by bam_hdr_t
@@ -4251,149 +2198,6 @@ pub struct bam1_core_t {
     pub mpos: i32,
     pub isize: i32,
 }
-#[test]
-fn bindgen_test_layout_bam1_core_t() {
-    assert_eq!(
-        ::std::mem::size_of::<bam1_core_t>(),
-        36usize,
-        concat!("Size of: ", stringify!(bam1_core_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<bam1_core_t>(),
-        4usize,
-        concat!("Alignment of ", stringify!(bam1_core_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam1_core_t>())).tid as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam1_core_t),
-            "::",
-            stringify!(tid)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam1_core_t>())).pos as *const _ as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam1_core_t),
-            "::",
-            stringify!(pos)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam1_core_t>())).bin as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam1_core_t),
-            "::",
-            stringify!(bin)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam1_core_t>())).qual as *const _ as usize },
-        10usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam1_core_t),
-            "::",
-            stringify!(qual)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam1_core_t>())).l_qname as *const _ as usize },
-        11usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam1_core_t),
-            "::",
-            stringify!(l_qname)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam1_core_t>())).flag as *const _ as usize },
-        12usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam1_core_t),
-            "::",
-            stringify!(flag)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam1_core_t>())).unused1 as *const _ as usize },
-        14usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam1_core_t),
-            "::",
-            stringify!(unused1)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam1_core_t>())).l_extranul as *const _ as usize },
-        15usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam1_core_t),
-            "::",
-            stringify!(l_extranul)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam1_core_t>())).n_cigar as *const _ as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam1_core_t),
-            "::",
-            stringify!(n_cigar)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam1_core_t>())).l_qseq as *const _ as usize },
-        20usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam1_core_t),
-            "::",
-            stringify!(l_qseq)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam1_core_t>())).mtid as *const _ as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam1_core_t),
-            "::",
-            stringify!(mtid)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam1_core_t>())).mpos as *const _ as usize },
-        28usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam1_core_t),
-            "::",
-            stringify!(mpos)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam1_core_t>())).isize as *const _ as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam1_core_t),
-            "::",
-            stringify!(isize)
-        )
-    );
-}
 /// @typedef
 ///@abstract Structure for one alignment.
 ///@field  core       core information about the alignment
@@ -4418,69 +2222,6 @@ pub struct bam1_t {
     pub m_data: u32,
     pub data: *mut u8,
     pub id: u64,
-}
-#[test]
-fn bindgen_test_layout_bam1_t() {
-    assert_eq!(
-        ::std::mem::size_of::<bam1_t>(),
-        64usize,
-        concat!("Size of: ", stringify!(bam1_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<bam1_t>(),
-        8usize,
-        concat!("Alignment of ", stringify!(bam1_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam1_t>())).core as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam1_t),
-            "::",
-            stringify!(core)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam1_t>())).l_data as *const _ as usize },
-        36usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam1_t),
-            "::",
-            stringify!(l_data)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam1_t>())).m_data as *const _ as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam1_t),
-            "::",
-            stringify!(m_data)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam1_t>())).data as *const _ as usize },
-        48usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam1_t),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam1_t>())).id as *const _ as usize },
-        56usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam1_t),
-            "::",
-            stringify!(id)
-        )
-    );
 }
 extern "C" {
     /// BAM I/O ***
@@ -4660,13 +2401,6 @@ extern "C" {
     pub fn sam_hdr_write(fp: *mut samFile, h: *const bam_hdr_t) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    pub fn sam_hdr_change_HD(
-        h: *mut bam_hdr_t,
-        key: *const ::std::os::raw::c_char,
-        val: *const ::std::os::raw::c_char,
-    ) -> ::std::os::raw::c_int;
-}
-extern "C" {
     pub fn sam_parse1(
         s: *mut kstring_t,
         h: *mut bam_hdr_t,
@@ -4788,29 +2522,6 @@ extern "C" {
         data: *const ::std::os::raw::c_char,
     ) -> ::std::os::raw::c_int;
 }
-extern "C" {
-    pub fn bam_aux_update_int(
-        b: *mut bam1_t,
-        tag: *const ::std::os::raw::c_char,
-        val: i64,
-    ) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    pub fn bam_aux_update_float(
-        b: *mut bam1_t,
-        tag: *const ::std::os::raw::c_char,
-        val: f32,
-    ) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    pub fn bam_aux_update_array(
-        b: *mut bam1_t,
-        tag: *const ::std::os::raw::c_char,
-        type_: u8,
-        items: u32,
-        data: *mut ::std::os::raw::c_void,
-    ) -> ::std::os::raw::c_int;
-}
 /// @typedef
 ///@abstract Generic pileup 'client data'.
 ///
@@ -4826,49 +2537,6 @@ pub union bam_pileup_cd {
     pub i: i64,
     pub f: f64,
     _bindgen_union_align: u64,
-}
-#[test]
-fn bindgen_test_layout_bam_pileup_cd() {
-    assert_eq!(
-        ::std::mem::size_of::<bam_pileup_cd>(),
-        8usize,
-        concat!("Size of: ", stringify!(bam_pileup_cd))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<bam_pileup_cd>(),
-        8usize,
-        concat!("Alignment of ", stringify!(bam_pileup_cd))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam_pileup_cd>())).p as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam_pileup_cd),
-            "::",
-            stringify!(p)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam_pileup_cd>())).i as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam_pileup_cd),
-            "::",
-            stringify!(i)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam_pileup_cd>())).f as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam_pileup_cd),
-            "::",
-            stringify!(f)
-        )
-    );
 }
 /// @typedef
 ///@abstract Structure for one alignment covering the pileup position.
@@ -4896,69 +2564,6 @@ pub struct bam_pileup1_t {
     pub level: ::std::os::raw::c_int,
     pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize], u32>,
     pub cd: bam_pileup_cd,
-}
-#[test]
-fn bindgen_test_layout_bam_pileup1_t() {
-    assert_eq!(
-        ::std::mem::size_of::<bam_pileup1_t>(),
-        32usize,
-        concat!("Size of: ", stringify!(bam_pileup1_t))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<bam_pileup1_t>(),
-        8usize,
-        concat!("Alignment of ", stringify!(bam_pileup1_t))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam_pileup1_t>())).b as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam_pileup1_t),
-            "::",
-            stringify!(b)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam_pileup1_t>())).qpos as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam_pileup1_t),
-            "::",
-            stringify!(qpos)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam_pileup1_t>())).indel as *const _ as usize },
-        12usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam_pileup1_t),
-            "::",
-            stringify!(indel)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam_pileup1_t>())).level as *const _ as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam_pileup1_t),
-            "::",
-            stringify!(level)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<bam_pileup1_t>())).cd as *const _ as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(bam_pileup1_t),
-            "::",
-            stringify!(cd)
-        )
-    );
 }
 impl bam_pileup1_t {
     #[inline]
@@ -5198,45 +2803,6 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    /// Calculate BAQ scores
-    ///** @param b   BAM record
-    ///@param ref     Reference sequence
-    ///@param ref_len Reference sequence length
-    ///@param flag    Flags, see description
-    ///@return 0 on success \n
-    ///-1 if the read was unmapped, zero length, had no quality values, did not have at least one M, X or = CIGAR operator, or included a reference skip. \n
-    ///-3 if BAQ alignment has already been done and does not need to be applied, or has already been applied. \n
-    ///-4 if alignment failed (most likely due to running out of memory)
-    ///
-    ///This function calculates base alignment quality (BAQ) values using the method
-    ///described in "Improving SNP discovery by base alignment quality", Heng Li,
-    ///Bioinformatics, Volume 27, Issue 8 (https://doi.org/10.1093/bioinformatics/btr076).
-    ///
-    ///The following @param flag bits can be used:
-    ///
-    ///Bit 0: Adjust the quality values using the BAQ values
-    ///
-    ///If set, the data in the BQ:Z tag is used to adjust the quality values, and
-    ///the BQ:Z tag is renamed to ZQ:Z.
-    ///
-    ///If clear, and a ZQ:Z tag is present, the quality values are reverted using
-    ///the data in the tag, and the tag is renamed to BQ:Z.
-    ///
-    ///Bit 1: Use "extended" BAQ.
-    ///
-    ///Changes the BAQ calculation to increase sensitivity at the expense of
-    ///reduced specificity.
-    ///
-    ///Bit 2: Recalculate BAQ, even if a BQ tag is present.
-    ///
-    ///Force BAQ to be recalculated.  Note that a ZQ:Z tag will always disable
-    ///recalculation.
-    ///
-    ///@bug
-    ///If the input read has both BQ:Z and ZQ:Z tags, the ZQ:Z one will be removed.
-    ///Depending on what previous processing happened, this may or may not be the
-    ///correct thing to do.  It would be wise to avoid this situation if possible.
-    ///*/
     pub fn sam_prob_realn(
         b: *mut bam1_t,
         ref_: *const ::std::os::raw::c_char,
@@ -5252,57 +2818,4 @@ pub struct __va_list_tag {
     pub fp_offset: ::std::os::raw::c_uint,
     pub overflow_arg_area: *mut ::std::os::raw::c_void,
     pub reg_save_area: *mut ::std::os::raw::c_void,
-}
-#[test]
-fn bindgen_test_layout___va_list_tag() {
-    assert_eq!(
-        ::std::mem::size_of::<__va_list_tag>(),
-        24usize,
-        concat!("Size of: ", stringify!(__va_list_tag))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<__va_list_tag>(),
-        8usize,
-        concat!("Alignment of ", stringify!(__va_list_tag))
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<__va_list_tag>())).gp_offset as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(__va_list_tag),
-            "::",
-            stringify!(gp_offset)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<__va_list_tag>())).fp_offset as *const _ as usize },
-        4usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(__va_list_tag),
-            "::",
-            stringify!(fp_offset)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<__va_list_tag>())).overflow_arg_area as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(__va_list_tag),
-            "::",
-            stringify!(overflow_arg_area)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::std::ptr::null::<__va_list_tag>())).reg_save_area as *const _ as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(__va_list_tag),
-            "::",
-            stringify!(reg_save_area)
-        )
-    );
 }

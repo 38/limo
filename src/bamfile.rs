@@ -14,13 +14,11 @@ pub struct MapInfoIter<'a> {
     seq      : Sequence<'a>,
     cigar_idx: u32,
     cigar    : Cigar,
-    count    : u32,
     alignment: &'a Alignment<'a>
 }
 
 #[derive(Debug)]
 pub struct MapInfo {
-    idx  : u32,
     read : Option<Nucleotide>,
     refs : bool
 }
@@ -35,7 +33,6 @@ impl <'a> MapInfoIter<'a> {
             cigar_idx : 0,
             cigar : Cigar{ op : CigarOps::Match, len : 0 },
             alignment : al,
-            count : 0
         };
     }
 }
@@ -59,9 +56,6 @@ impl <'a> Iterator for MapInfoIter<'a> {
         
         self.cigar.len -= 1;
 
-        let idx = self.count;
-        self.count += 1;
-
         let next_refs = self.cigar.in_reference();
         let next_read = if self.cigar.in_alignment() { 
             if self.read_ofs < (self.seq.size() as u32) { 
@@ -74,8 +68,7 @@ impl <'a> Iterator for MapInfoIter<'a> {
 
         return Some(MapInfo {
             read : next_read,
-            refs : next_refs,
-            idx  : idx
+            refs : next_refs
         });
     }
 }
@@ -318,6 +311,9 @@ impl BamFile {
     }
 
     #[allow(dead_code)]
+    pub fn size(&self) -> usize { self.length }
+
+    #[allow(dead_code)]
     pub fn try_iter(&self) -> Result<BamFileIter, ()> { self.try_iter_range(0, self.length) }
 
     #[allow(dead_code)]
@@ -364,4 +360,18 @@ impl <'a> Iterator for BamFileIter<'a> {
         return Some(Alignment { data : unsafe { self.buffer.as_ref().unwrap() } });
     }
 
+}
+
+#[cfg(test)]
+mod bamfile_test {
+    use super::*;
+    #[test]
+    fn read_bam() -> Result<(), ()>
+    {
+        let file = BamFile::new("data/a.bam", 0, None)?;
+
+        assert_eq!(file.try_iter()?.count(), 2);
+
+        Ok(())
+    }
 }
