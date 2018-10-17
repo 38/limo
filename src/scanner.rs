@@ -2,8 +2,8 @@ use super::window::Window;
 use super::bamfile::BamFile;
 
 pub struct Scanner {
-    corrected_window : Window<i32>,
-    low_mq_window    : Window<i32>,
+    corrected_window : Window<u32>,
+    low_mq_window    : Window<u32>,
     common_read_len     : u32,
     common_read_len_cnt : u32
 }
@@ -16,13 +16,13 @@ impl Scanner {
     }
 
     #[allow(dead_code)]
-    pub fn get_corrected(&self) -> &Window<i32>
+    pub fn get_corrected(&self) -> &Window<u32>
     {
         &self.corrected_window
     }
 
     #[allow(dead_code)]
-    pub fn get_low_mq_window(&self) -> &Window<i32>
+    pub fn get_low_mq_window(&self) -> &Window<u32>
     {
         &self.low_mq_window
     }
@@ -32,8 +32,8 @@ impl Scanner {
         let size = bam.size();
         
         let mut ret = Scanner {
-            corrected_window : Window::<i32>::new(size),
-            low_mq_window    : Window::<i32>::new(size),
+            corrected_window : Window::<u32>::new(size),
+            low_mq_window    : Window::<u32>::new(size),
             common_read_len  : 0,
             common_read_len_cnt: 0
         };
@@ -46,11 +46,14 @@ impl Scanner {
                {
                    ret.common_read_len_cnt -= 1
                }
+               else
+               {
+                   ret.common_read_len_cnt += 1;
+               }
 
                if ret.common_read_len_cnt == 0
                {
                    ret.common_read_len = read.length();
-                   ret.common_read_len_cnt = 1;
                }
            }
 
