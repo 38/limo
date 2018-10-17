@@ -17,7 +17,7 @@ fn main() -> Result<(), ()>
     let scanner = Scanner::new(&bam)?; 
     let mut hist = Histogram::new(1024);
 
-    scanner.get_corrected().iter(1).for_each(|v| hist.add(v));
+    scanner.get_corrected().iter(1).for_each(|v:i32| hist.add(v as u32));
 
     eprintln!("{}", hist.get_average());
     eprintln!("{}", hist.normalize(70));
