@@ -56,9 +56,14 @@ impl <DM:DepthModel + Sized> Frontend<DM> {
 
         return Ok(ret);
     }
+
+    pub fn iter<'a>(&'a mut self) -> FrontendIter<'a, DM> 
+    {
+        return FrontendIter::new(self);
+    }
 }
 
-impl <'a, DM:DepthModel + Sized> FrontendIter<'a, DM> where DM::Input : From<f64>
+impl <'a, DM:DepthModel + Sized> FrontendIter<'a, DM>
 {
     fn get_normalized_depth(&mut self) -> Option<DM::Input>
     {
@@ -79,7 +84,6 @@ impl <'a, DM:DepthModel + Sized> FrontendIter<'a, DM> where DM::Input : From<f64
         self.right_mod[0..].iter_mut().for_each(|m| m.model.put(dep));
     }
 
-    #[allow(dead_code)]
     fn new(obj:&'a mut Frontend<DM>) -> Self
     {
         let mut hist = Histogram::new(1024);
@@ -132,7 +136,7 @@ impl <'a, DM:DepthModel + Sized> FrontendIter<'a, DM> where DM::Input : From<f64
     }
 }
 
-impl <'a, DM : DepthModel + Sized> Iterator for FrontendIter<'a, DM> where DM::Input : From<f64>
+impl <'a, DM : DepthModel + Sized> Iterator for FrontendIter<'a, DM>
 {
     type Item = Event<DM>;
     fn next(&mut self) -> Option<Self::Item>

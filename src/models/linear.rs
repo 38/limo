@@ -1,5 +1,6 @@
 use crate::depth_model::DepthModel;
 
+#[derive(Debug)]
 pub struct LinearModel {
     k : f64,
     p : f64,
