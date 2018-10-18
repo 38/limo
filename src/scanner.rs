@@ -112,16 +112,14 @@ impl Scanner {
         return Ok(ret);
     }
 }
-
 #[cfg(test)]
-mod scanner_test {
+pub mod mock_bam {
     use super::*;
-
-    struct TestAlignment {
-        begin : u32,
-        end   : u32,
-        split : bool,
-        qual  : u32
+    pub struct TestAlignment {
+        pub begin : u32,
+        pub end   : u32,
+        pub split : bool,
+        pub qual  : u32
     }
 
     impl <'a> AlignmentType for &'a TestAlignment {
@@ -137,6 +135,12 @@ mod scanner_test {
         fn size(&self) -> usize { self.0 }
         fn try_iter(&'a self) -> Result<Self::IterType, ()> { Ok(self.1[0..].iter()) }
     }
+
+}
+#[cfg(test)]
+mod scanner_test {
+    use super::*;
+    use super::mock_bam::*;
 
     #[test]
     fn test_scanner() -> Result<(), ()>

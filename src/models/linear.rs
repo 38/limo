@@ -40,6 +40,17 @@ fn square<T:std::ops::Mul + Copy>(what:T) -> T::Output
 impl DepthModel for LinearModel {
     type Input = f64;
     type Output = f64;
+    type ParamType = u32;
+    fn create_model(copy_num:u32, left: bool, p:u32) -> Self
+    {
+        let target_depth = 0.5 * (copy_num as f64);
+        if left
+        {
+            return LinearModel::new(p + 1, 1.0, target_depth);
+        }
+
+        return LinearModel::new(p + 1, target_depth, 1.0);
+    }
     fn put(&mut self, next: Self::Input) 
     {
         if self.right - self.left >= self.len

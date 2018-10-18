@@ -5,6 +5,7 @@ mod depth_model;
 mod scanner;
 mod histogram;
 mod models;
+mod frontend;
 
 use self::bamfile::BamFile;
 use self::scanner::Scanner;
