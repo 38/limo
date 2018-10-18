@@ -4,4 +4,3 @@ pub trait DepthModel {
     fn put(&mut self, next : Self::Input) -> ();
     fn get_score(&self) -> Self::Output;
 }
-

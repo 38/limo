@@ -4,6 +4,7 @@ mod bamfile;
 mod depth_model;
 mod scanner;
 mod histogram;
+mod models;
 
 use self::bamfile::BamFile;
 use self::scanner::Scanner;
@@ -17,7 +18,7 @@ fn main() -> Result<(), ()>
     let scanner = Scanner::new(&bam)?; 
     let mut hist = Histogram::new(1024);
 
-    scanner.get_corrected().iter(1).for_each(|v:i32| hist.add(v as u32));
+    scanner.get_raw_window().iter(1).for_each(|v:i32| hist.add(v as u32));
 
     eprintln!("{}", hist.get_average());
     eprintln!("{}", hist.normalize(70));
