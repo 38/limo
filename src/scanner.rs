@@ -38,19 +38,16 @@ pub struct Scanner {
 }
 
 impl Scanner {
-    #[allow(dead_code)]
     pub fn get_common_read_length(&self) -> u32 
     {
         self.common_read_len
     }
 
-    #[allow(dead_code)]
     pub fn get_corrected(&self) -> &Window<i32>
     {
         &self.corrected_window
     }
 
-    #[allow(dead_code)]
     pub fn get_low_mq_window(&self) -> &Window<i32>
     {
         &self.low_mq_window

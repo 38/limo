@@ -5,7 +5,6 @@ use crate::histogram::Histogram;
 use crate::window::WindowIter;
 
 #[derive(Debug, Copy, Clone)]
-#[allow(dead_code)]
 pub enum Side {
     Left,
     Right
@@ -35,10 +34,12 @@ pub struct FrontendIter<'a, DM:DepthModel + Sized> {
 
 #[derive(Debug, Copy, Clone)]
 pub struct Event<DM:DepthModel> {
-    side : Side,
-    score: DM::Output,
-    pos  : u32,
-    copy_num: u32
+    pub side : Side,
+    pub score: DM::Output,
+    pub pos  : u32,
+    pub copy_num: u32,
+    pub total_dep: u32,
+    pub lowmq_dep: u32
 }
 
 impl <DM:DepthModel + Sized> Frontend<DM> {
@@ -65,14 +66,14 @@ impl <DM:DepthModel + Sized> Frontend<DM> {
 
 impl <'a, DM:DepthModel + Sized> FrontendIter<'a, DM>
 {
-    fn get_normalized_depth(&mut self) -> Option<DM::Input>
+    fn get_normalized_depth(&mut self) -> Option<(DM::Input, u32, u32)>
     {
         if let Some(correct) = self.correct_iter.next()
         {
             if let Some(excluded) = self.exclude_iter.next()
             {
                 let normalized = self.hist.normalize((correct - excluded) as u32);
-                return Some(From::from(normalized));
+                return Some((From::from(normalized), correct as u32, excluded as u32));
             }
         }
         return None;
@@ -126,7 +127,7 @@ impl <'a, DM:DepthModel + Sized> FrontendIter<'a, DM>
 
         for _ in 0..ret.pos 
         {
-            if let Some(dep) = ret.get_normalized_depth()
+            if let Some((dep,_,_)) = ret.get_normalized_depth()
             {
                 ret.feed(dep);
             }
@@ -141,7 +142,7 @@ impl <'a, DM : DepthModel + Sized> Iterator for FrontendIter<'a, DM>
     type Item = Event<DM>;
     fn next(&mut self) -> Option<Self::Item>
     {
-        if let Some(dep) = self.get_normalized_depth()
+        if let Some((dep, total_dep, lowmq_dep)) = self.get_normalized_depth()
         {
             self.feed(dep);
             self.pos += 1;
@@ -178,7 +179,18 @@ impl <'a, DM : DepthModel + Sized> Iterator for FrontendIter<'a, DM>
                     score: best_score,
                     pos  : self.pos,
                     side : best_side.unwrap(),
-                    copy_num: best_copy_num.unwrap()
+                    copy_num: best_copy_num.unwrap(),
+                    total_dep, lowmq_dep
+                });
+            }
+            else 
+            {
+                return Some(Event {
+                    score : Default::default(),
+                    pos   : self.pos,
+                    side  : Side::Left,
+                    copy_num: u32::max_value(),
+                    total_dep, lowmq_dep
                 });
             }
         }
