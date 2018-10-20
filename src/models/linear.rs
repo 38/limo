@@ -42,7 +42,16 @@ impl DepthModel for LinearModel {
     type Input = f64;
     type Output = f64;
     type ParamType = u32;
-    const EPS:f64 = 1e-5;
+    fn score_cmp(left : Self::Output, right : Self::Output) -> i32
+    {
+        return if (left - right).abs() < 1e-5 { 0 } 
+        else if left < right { -1 }
+        else { 1 };
+    }
+    fn score_threshold(score : Self::Output) -> bool
+    {
+        return score < 7000.0;
+    }
     fn create_model(copy_num:u32, left: bool, p:u32) -> Self
     {
         let target_depth = 0.5 * (copy_num as f64);

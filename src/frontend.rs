@@ -58,6 +58,11 @@ impl <DM:DepthModel + Sized> Frontend<DM> {
         return Ok(ret);
     }
 
+    pub fn get_copy_nums(&self) -> &[u32] 
+    {
+        return &self.copy_nums[0..];
+    }
+
     pub fn iter<'a>(&'a mut self) -> FrontendIter<'a, DM> 
     {
         return FrontendIter::new(self);
