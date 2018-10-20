@@ -1,6 +1,6 @@
 use crate::depth_model::DepthModel;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LinearModel {
     k : f64,
     p : f64,
@@ -42,6 +42,7 @@ impl DepthModel for LinearModel {
     type Input = f64;
     type Output = f64;
     type ParamType = u32;
+    const EPS:f64 = 1e-5;
     fn create_model(copy_num:u32, left: bool, p:u32) -> Self
     {
         let target_depth = 0.5 * (copy_num as f64);

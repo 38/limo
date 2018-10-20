@@ -1,13 +1,15 @@
-extern crate bindgen;
-
 use std::process::Command;
 use std::path::Path;
+
+use bindgen::Builder as BG;
+
+use num_cpus::get as get_num_cpus;
 
 fn create_hts_bindings() -> Result<(), ()>
 {
     if !Path::new("generated/htslib.rs").exists()
     {
-        bindgen::Builder::default()
+        BG::default()
             .header("include/htslib_wrap.h")
             .clang_arg("-Ihtslib/htslib")
             .layout_tests(false)
@@ -22,7 +24,11 @@ fn main() -> Result<(), ()>
     create_hts_bindings()?;
     if !Path::new("htslib/libhts.a").exists()
     {
-        Command::new("make").current_dir("htslib").spawn().expect("Unable to call makefile for htslib");
+        Command::new("make")
+            .arg(format!("-j{}", get_num_cpus()))
+            .current_dir("htslib")
+            .spawn()
+            .expect("Unable to call makefile for htslib");
     }
     println!("cargo:rustc-link-search=htslib/");
     println!("cargo:rustc-link-lib=hts");
