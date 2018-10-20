@@ -39,7 +39,7 @@ fn main() -> Result<(), ()>
 
     let mut recent = Vec::<Event<LinearModel>>::new();
 
-    let mut left_items : Vec<Option<Event<LinearModel>>> = vec![None; max_copy_num as usize];
+    let mut left_items : Vec<Option<Event<LinearModel>>> = vec![None; (max_copy_num + 1) as usize];
 
     let mut last_pos = 0u32;
 
