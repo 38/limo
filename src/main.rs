@@ -23,7 +23,7 @@ fn main() -> Result<(), ()>
     
     for (left, right) in EventPairProc::new(&mut frontend)
     {
-        println!("{:?}", (left, right));
+        println!("{}\t{}\t{}\t{}\t{}", left.chrom, left.pos, right.pos, left.score, right.score); 
     }
 
     return Ok(());

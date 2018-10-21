@@ -25,6 +25,7 @@ pub struct Frontend<DM:DepthModel + Sized> {
 
 pub struct FrontendIter<'a, DM:DepthModel + Sized> {
     pos : u32,
+    chrom: &'a str,
     correct_iter: WindowIter<'a, i32, i32>,
     exclude_iter: WindowIter<'a, i32, i32>,
     hist    : Histogram,
@@ -33,7 +34,8 @@ pub struct FrontendIter<'a, DM:DepthModel + Sized> {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct Event<DM:DepthModel> {
+pub struct Event<'a, DM:DepthModel> {
+    pub chrom: &'a str,
     pub side : Side,
     pub score: DM::Output,
     pub pos  : u32,
@@ -127,7 +129,8 @@ impl <'a, DM:DepthModel + Sized> FrontendIter<'a, DM>
             left_mod,
             right_mod,
             correct_iter,
-            exclude_iter
+            exclude_iter,
+            chrom: obj.scanner.get_chrom()
         };
 
         for _ in 0..ret.pos 
@@ -144,7 +147,7 @@ impl <'a, DM:DepthModel + Sized> FrontendIter<'a, DM>
 
 impl <'a, DM : DepthModel + Sized> Iterator for FrontendIter<'a, DM>
 {
-    type Item = Event<DM>;
+    type Item = Event<'a,DM>;
     fn next(&mut self) -> Option<Self::Item>
     {
         if let Some((dep, total_dep, lowmq_dep)) = self.get_normalized_depth()
@@ -180,7 +183,8 @@ impl <'a, DM : DepthModel + Sized> Iterator for FrontendIter<'a, DM>
 
             if best_side.is_some()
             {
-                return Some(Event { 
+                return Some(Event {
+                    chrom: self.chrom,
                     score: best_score,
                     pos  : self.pos,
                     side : best_side.unwrap(),
@@ -191,6 +195,7 @@ impl <'a, DM : DepthModel + Sized> Iterator for FrontendIter<'a, DM>
             else 
             {
                 return Some(Event {
+                    chrom: self.chrom,
                     score : Default::default(),
                     pos   : self.pos,
                     side  : Side::Left,
@@ -205,5 +210,5 @@ impl <'a, DM : DepthModel + Sized> Iterator for FrontendIter<'a, DM>
 
 #[cfg(test)]
 mod test {
-    use crate::scanner::mock_bam::*;
+    //use crate::scanner::mock_bam::*;
 }

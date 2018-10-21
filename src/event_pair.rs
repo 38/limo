@@ -3,9 +3,9 @@ use crate::frontend::{Event, FrontendIter, Frontend, Side};
 
 #[allow(dead_code)]
 pub struct EventPairProc<'a, DM : DepthModel> {
-    left_side: Vec<Option<Event<DM>>>,
+    left_side: Vec<Option<Event<'a, DM>>>,
     last_pos : u32,
-    recent   : Vec<Event<DM>>,
+    recent   : Vec<Event<'a, DM>>,
     max_copy_num : u32,
     fe_iter  : FrontendIter<'a, DM>
 }
@@ -29,7 +29,7 @@ impl <'a, DM : DepthModel> EventPairProc<'a, DM>
 
 impl <'a, DM : DepthModel> Iterator for EventPairProc<'a, DM>
 {
-    type Item = (Event<DM>, Event<DM>);
+    type Item = (Event<'a, DM>, Event<'a, DM>);
 
     fn next(&mut self) -> Option<Self::Item>
     {

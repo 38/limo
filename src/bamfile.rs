@@ -344,6 +344,11 @@ impl BamFile {
             buffer: buffer
         });
     }
+
+    pub fn chrom(&self) -> &str
+    {
+        return &self.chrom[0..];
+    }
 }
 
 impl <'a> Iterator for BamFileIter<'a> {

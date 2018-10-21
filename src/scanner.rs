@@ -21,12 +21,14 @@ pub trait Input<'a, T:AlignmentType> {
     type IterType : Iterator<Item = T>;
     fn size(&self) -> usize;
     fn try_iter(&'a self) -> Result<Self::IterType, ()>;
+    fn get_chrom(&self) -> &str;
 }
 
 impl <'a> Input<'a, Alignment<'a>> for BamFile {
     type IterType = BamFileIter<'a>;
     fn size(&self) -> usize { self.size() }
     fn try_iter(&'a self) -> Result<Self::IterType, ()> { self.try_iter() }
+    fn get_chrom(&self) -> &str { self.chrom() }
 }
 
 pub struct Scanner {
@@ -34,7 +36,8 @@ pub struct Scanner {
     low_mq_window    : Window<i32>,
     raw_window       : Window<i32>,
     common_read_len     : u32,
-    common_read_len_cnt : u32
+    common_read_len_cnt : u32,
+    chrom               : Box<str>
 }
 
 impl Scanner {
@@ -59,6 +62,11 @@ impl Scanner {
         &self.raw_window
     }
 
+    pub fn get_chrom(&self) -> &str 
+    {
+        return self.chrom.as_ref();
+    }
+
     pub fn new<'a, IType, AType>(bam:&'a IType) -> Result<Scanner, ()>
         where AType : AlignmentType,
               IType : Input<'a, AType>
@@ -70,7 +78,8 @@ impl Scanner {
             low_mq_window    : Window::<i32>::new(size),
             raw_window       : Window::<i32>::new(size),
             common_read_len  : 0,
-            common_read_len_cnt: 0
+            common_read_len_cnt: 0,
+            chrom            : String::from(bam.get_chrom()).into_boxed_str()
         };
 
         for read in bam.try_iter()?
@@ -131,6 +140,7 @@ pub mod mock_bam {
         type IterType = std::slice::Iter<'a, TestAlignment>;
         fn size(&self) -> usize { self.0 }
         fn try_iter(&'a self) -> Result<Self::IterType, ()> { Ok(self.1[0..].iter()) }
+        fn get_chrom(&self) -> &str { "Chr1" }
     }
 
 }
