@@ -201,7 +201,8 @@ impl <'a> Alignment<'a> {
     pub fn mqual(&self) -> u32 { self.data.core.qual as u32 }
     pub unsafe fn read_tag(&self, tag : &str) -> *const u8 
     {
-        let tag_array = CString::new(tag).unwrap().as_ptr();
+        let tag_string = CString::new(tag).unwrap();
+        let tag_array = tag_string.as_ptr();
         bam_aux_get(self.data as *const bam1_t, tag_array) 
     }
     pub fn is_split_read(&self) -> bool { return unsafe{ self.read_tag("SA") } != null(); }

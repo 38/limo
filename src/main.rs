@@ -15,11 +15,11 @@ use self::event_pair::EventPairProc;
 
 fn main() -> Result<(), ()>
 {
-    let bam = BamFile::new("/uufs/chpc.utah.edu/common/home/u0875014/data/NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam", 1, None)?;
+    let bam = BamFile::new("/uufs/chpc.utah.edu/common/home/u0875014/data/NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam", 0, None)?;
 
     let target_copy_nums = [0,1];
 
-    let mut frontend = Frontend::<LinearModel>::new(&bam, 300, &target_copy_nums, 300)?;
+    let mut frontend = Frontend::<LinearModel>::new(&bam, 300, &target_copy_nums, None)?;
     
     for (left, right) in EventPairProc::new(&mut frontend)
     {

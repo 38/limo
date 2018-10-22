@@ -45,10 +45,11 @@ pub struct Event<'a, DM:DepthModel> {
 }
 
 impl <DM:DepthModel + Sized> Frontend<DM> {
-    #[allow(dead_code)]
-    pub fn new(fp:&BamFile, window_size: u32, copy_nums:&[u32], dmp : DM::ParamType) -> Result<Self,()>
+    pub fn new(fp:&BamFile, window_size: u32, copy_nums:&[u32], customized_dmp : Option<DM::ParamType>) -> Result<Self,()>
     {
         let scanner = Scanner::new(fp)?;
+
+        let dmp = if let Some(param) = customized_dmp { param } else { DM::determine_default_param(&scanner, window_size, copy_nums) };
 
         let ret = Self {
             scanner,
@@ -95,7 +96,7 @@ impl <'a, DM:DepthModel + Sized> FrontendIter<'a, DM>
     fn new(obj:&'a mut Frontend<DM>) -> Self
     {
         let mut hist = Histogram::new(1024);
-        obj.scanner.get_raw_window().iter(1).for_each(|v:i32| hist.add(v as u32));
+        obj.scanner.get_corrected().iter(obj.window_size as usize).for_each(|v:i32| hist.add(v as u32));
 
         let size = obj.window_size + obj.scanner.get_common_read_length();
         let correct_iter = obj.scanner.get_corrected().iter(obj.window_size as usize);
@@ -152,6 +153,8 @@ impl <'a, DM : DepthModel + Sized> Iterator for FrontendIter<'a, DM>
     {
         if let Some((dep, total_dep, lowmq_dep)) = self.get_normalized_depth()
         {
+            let pos = self.pos;
+
             self.feed(dep);
             self.pos += 1;
 
@@ -186,7 +189,7 @@ impl <'a, DM : DepthModel + Sized> Iterator for FrontendIter<'a, DM>
                 return Some(Event {
                     chrom: self.chrom,
                     score: best_score,
-                    pos  : self.pos,
+                    pos,
                     side : best_side.unwrap(),
                     copy_num: best_copy_num.unwrap(),
                     total_dep, lowmq_dep
@@ -197,7 +200,7 @@ impl <'a, DM : DepthModel + Sized> Iterator for FrontendIter<'a, DM>
                 return Some(Event {
                     chrom: self.chrom,
                     score : Default::default(),
-                    pos   : self.pos,
+                    pos,
                     side  : Side::Left,
                     copy_num: u32::max_value(),
                     total_dep, lowmq_dep

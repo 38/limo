@@ -103,7 +103,7 @@ impl Scanner {
 
            let (begin, end) = (read.get_begin() as usize, read.get_end() as usize);
 
-           ret.raw_window.accumulate(begin, end, 1);
+           if read.get_mqual() != 0 { ret.raw_window.accumulate(begin, end, 1); }
 
            if read.check_is_split_read() { continue; }
 

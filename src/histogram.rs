@@ -17,9 +17,11 @@ impl Histogram {
     pub fn add(&mut self, val:u32) -> ()
     {
         self.average = None;
-        let actual_val = if val as usize >= self.freq.len() { self.freq.len() - 1 } else { val as usize};
-        self.freq[actual_val] += 1;
-        self.count += 1;
+        if (val as usize) < self.freq.len() 
+        {
+            self.freq[val as usize] += 1;
+            self.count += 1;
+        }
     }
 
     pub fn get_average(&mut self) -> f64 

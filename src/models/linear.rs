@@ -1,4 +1,5 @@
 use crate::depth_model::DepthModel;
+use crate::scanner::Scanner;
 
 #[derive(Debug, Clone)]
 pub struct LinearModel {
@@ -42,6 +43,12 @@ impl DepthModel for LinearModel {
     type Input = f64;
     type Output = f64;
     type ParamType = u32;
+
+    fn determine_default_param(scanner:&Scanner, winsize: u32, _target:&[u32]) -> u32
+    {
+        scanner.get_common_read_length() + winsize
+    }
+
     fn score_cmp(left : Self::Output, right : Self::Output) -> i32
     {
         return if (left - right).abs() < 1e-5 { 0 } 
@@ -52,21 +59,24 @@ impl DepthModel for LinearModel {
     {
         return score < 7000.0;
     }
+
     fn create_model(copy_num:u32, left: bool, p:u32) -> Self
     {
         let target_depth = 0.5 * (copy_num as f64);
+
         if left
         {
-            return LinearModel::new(p + 1, 1.0, target_depth);
+            return LinearModel::new(p, 1.0, target_depth);
         }
 
-        return LinearModel::new(p + 1, target_depth, 1.0);
+        return LinearModel::new(p, target_depth, 1.0);
     }
     fn put(&mut self, next: Self::Input) 
     {
         if self.right - self.left >= self.len
         {
             self.square += 2.0 * self.k * self.sum + square(next - self.pe) - square(self.buf[self.left_idx as usize] - self.p + self.k) + (self.len as f64 * square(self.k));
+
             if self.square < 0.0 { self.square = 0f64 }
             
             self.sum += next - self.buf[self.left_idx as usize];
