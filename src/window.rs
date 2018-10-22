@@ -1,4 +1,5 @@
 use std::ops::{Add, Sub};
+use std::io::{Read, Write};
 
 #[allow(dead_code)]
 pub struct Window<T> where
@@ -17,6 +18,43 @@ impl <T> Window<T> where
     T : Add<Output = T>,
     T : Sub<Output = T>
 {
+    pub fn try_dump<TOut:Write>(&self, fp:&mut TOut) -> Result<(), std::io::Error>
+    {
+        fp.write_all(unsafe{ std::mem::transmute(&[self.acc.len()][0..]) })?;
+        fp.write_all(unsafe{ std::mem::transmute(&self.acc[0..])})?;
+        fp.write_all(unsafe{ std::mem::transmute(&self.ext[0..])})?;
+
+        return Ok(());
+    }
+
+    pub fn try_load<TIn:Read>(fp:&mut TIn) -> Result<Self, std::io::Error>
+    {
+        let mut buffer = [0usize];
+
+        let size = fp.read(unsafe{ std::mem::transmute(&mut buffer[0..])})?;
+
+        if size != std::mem::size_of::<usize>()
+        { 
+            return Err(std::io::Error::new(std::io::ErrorKind::Other, "unexpected header size")); 
+        }
+
+        let mut ret = Self {
+            acc: vec![T::default(); buffer[0]],
+            ext: vec![T::default(); buffer[0]]
+        };
+
+        let acc = fp.read(unsafe{std::mem::transmute(&mut ret.acc[0..])})?;
+        let ext = fp.read(unsafe{std::mem::transmute(&mut ret.ext[0..])})?;
+
+        if acc != buffer[0] * std::mem::size_of::<usize>() ||
+           ext != buffer[0] * std::mem::size_of::<usize>()
+        {
+            return Err(std::io::Error::new(std::io::ErrorKind::Other, "cannot read the data block"));
+        }
+
+        return Ok(ret);
+    }
+
     pub fn new(range:usize) -> Self 
     {
         Self {

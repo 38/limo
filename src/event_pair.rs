@@ -1,7 +1,6 @@
 use crate::depth_model::DepthModel;
 use crate::frontend::{Event, FrontendIter, Frontend, Side};
 
-#[allow(dead_code)]
 pub struct EventPairProc<'a, DM : DepthModel> {
     left_side: Vec<Option<Event<'a, DM>>>,
     last_pos : u32,
@@ -12,7 +11,6 @@ pub struct EventPairProc<'a, DM : DepthModel> {
 
 impl <'a, DM : DepthModel> EventPairProc<'a, DM> 
 {
-    #[allow(dead_code)]
     pub fn new(fe:&'a mut Frontend<DM>) -> Self
     {
         let target_copy_nums = fe.get_copy_nums();

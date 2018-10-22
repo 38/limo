@@ -1,5 +1,6 @@
 use super::window::Window;
 use super::bamfile::{BamFile, Alignment, BamFileIter};
+use std::io::{Write, Read};
 
 pub trait AlignmentType {
     fn get_begin(&self) -> u32;
@@ -65,6 +66,43 @@ impl Scanner {
     pub fn get_chrom(&self) -> &str 
     {
         return self.chrom.as_ref();
+    }
+
+    #[allow(dead_code)]
+    pub fn try_dump<T:Write>(&self, fp:&mut T) -> Result<(), std::io::Error>
+    {
+        let header = [self.chrom.len() as u32 ,self.common_read_len, self.common_read_len_cnt];
+
+        fp.write_all(unsafe{ std::mem::transmute(&self.chrom[0..])})?;
+        fp.write_all(unsafe{ std::mem::transmute(&header[0..])})?;
+        self.corrected_window.try_dump(fp)?;
+        self.low_mq_window.try_dump(fp)?;
+        self.raw_window.try_dump(fp)?;
+
+        return Ok(());
+    }
+
+    #[allow(dead_code)]
+    pub fn try_load<T:Read>(fp:&mut T) -> Result<Scanner, std::io::Error>
+    {
+        let mut header = [0u32;3];
+
+        fp.read(unsafe{ std::mem::transmute(&mut header[0..]) })?;
+
+        let mut name_buf = vec![0u8; header[0] as usize];
+
+        fp.read(&mut name_buf[0..])?;
+
+        let name = std::str::from_utf8(&name_buf[0..]).unwrap();
+
+        return Ok(Scanner {
+            corrected_window: Window::<i32>::try_load(fp)?,
+            low_mq_window: Window::<i32>::try_load(fp)?,
+            raw_window: Window::<i32>::try_load(fp)?,
+            common_read_len: header[1],
+            common_read_len_cnt: header[2],
+            chrom : String::from(name).into_boxed_str()
+        });
     }
 
     pub fn new<'a, IType, AType>(bam:&'a IType) -> Result<Scanner, ()>
