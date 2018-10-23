@@ -14,23 +14,29 @@ use self::models::linear::LinearModel;
 use self::event_pair::EventPairProc;
 use self::scanner::Scanner;
 
-#[allow(dead_code)]
-fn scan_bam() -> Result<(), ()>
+const BAM_PATH:&'static str = "/uufs/chpc.utah.edu/common/home/u0875014/data/NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam";
+const IR_PATH:&'static str = "/uufs/chpc.utah.edu/common/home/u0875014/limo-development/run/NA12878.limo-scan";
+
+fn save_scan_result(scanner:&Scanner) -> Result<(), ()>
 {
-    let bam = BamFile::new("/uufs/chpc.utah.edu/common/home/u0875014/data/NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam", 0, None)?;
-
-    let scanner = Scanner::new(&bam)?;
-
-    scanner.try_dump(&mut std::fs::File::create("/uufs/chpc.utah.edu/common/home/u0875014/limo-development/run/NA12878.limo-scan").unwrap()).expect("cannot dump");
+    scanner.try_dump(&mut std::fs::File::create(IR_PATH).unwrap()).expect("cannot dump");
 
     return Ok(());
 }
 
 fn main() -> Result<(), ()>
 {
-    //return scan_bam();
-
-    let scanner = Scanner::try_load(&mut std::fs::File::open("/uufs/chpc.utah.edu/common/home/u0875014/limo-development/run/NA12878.limo-scan").unwrap()).expect("Cannot load");
+    let scanner = if !std::path::Path::new(IR_PATH).exists()
+    {
+        let bam = BamFile::new(BAM_PATH, 0, None)?;
+        let scanner = Scanner::new(&bam)?;
+        save_scan_result(&scanner)?;
+        scanner
+    }
+    else
+    {
+        Scanner::try_load(&mut std::fs::File::open(IR_PATH).unwrap()).expect("Cannot load")
+    };
 
     let target_copy_nums = [0,1];
 
