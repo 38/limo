@@ -1,6 +1,7 @@
 use super::window::Window;
 use super::bamfile::{BamFile, Alignment, BamFileIter};
 use std::io::{Write, Read};
+use std::slice;
 
 pub trait AlignmentType {
     fn get_begin(&self) -> u32;
@@ -72,9 +73,10 @@ impl Scanner {
     pub fn try_dump<T:Write>(&self, fp:&mut T) -> Result<(), std::io::Error>
     {
         let header = [self.chrom.len() as u32 ,self.common_read_len, self.common_read_len_cnt];
+        let header_ptr = &header as *const u32;
 
+        fp.write_all(unsafe{ slice::from_raw_parts(header_ptr as *const u8, std::mem::size_of::<u32>() * header.len())})?;
         fp.write_all(unsafe{ std::mem::transmute(&self.chrom[0..])})?;
-        fp.write_all(unsafe{ std::mem::transmute(&header[0..])})?;
         self.corrected_window.try_dump(fp)?;
         self.low_mq_window.try_dump(fp)?;
         self.raw_window.try_dump(fp)?;
@@ -86,8 +88,9 @@ impl Scanner {
     pub fn try_load<T:Read>(fp:&mut T) -> Result<Scanner, std::io::Error>
     {
         let mut header = [0u32;3];
+        let header_ptr = header.as_mut_ptr();
 
-        fp.read(unsafe{ std::mem::transmute(&mut header[0..]) })?;
+        fp.read(unsafe{ slice::from_raw_parts_mut(header_ptr as *mut u8, std::mem::size_of::<u32>() * header.len()) })?;
 
         let mut name_buf = vec![0u8; header[0] as usize];
 

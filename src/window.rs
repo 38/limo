@@ -1,5 +1,6 @@
 use std::ops::{Add, Sub};
 use std::io::{Read, Write};
+use std::slice;
 
 #[allow(dead_code)]
 pub struct Window<T> where
@@ -20,18 +21,19 @@ impl <T> Window<T> where
 {
     pub fn try_dump<TOut:Write>(&self, fp:&mut TOut) -> Result<(), std::io::Error>
     {
-        fp.write_all(unsafe{ std::mem::transmute(&[self.acc.len()][0..]) })?;
-        fp.write_all(unsafe{ std::mem::transmute(&self.acc[0..])})?;
-        fp.write_all(unsafe{ std::mem::transmute(&self.ext[0..])})?;
+        fp.write_all(unsafe { slice::from_raw_parts((&self.acc.len() as *const usize) as *const u8, std::mem::size_of::<usize>()) })?;
+        fp.write_all(unsafe { slice::from_raw_parts(self.acc.as_ptr() as *const u8, std::mem::size_of::<T>() * self.acc.len()) })?;
+        fp.write_all(unsafe { slice::from_raw_parts(self.ext.as_ptr() as *const u8, std::mem::size_of::<T>() * self.acc.len()) })?;
 
         return Ok(());
     }
 
     pub fn try_load<TIn:Read>(fp:&mut TIn) -> Result<Self, std::io::Error>
     {
-        let mut buffer = [0usize];
+        let mut buffer = 0usize;
+        let buffer_ptr = &mut buffer as *mut usize;
 
-        let size = fp.read(unsafe{ std::mem::transmute(&mut buffer[0..])})?;
+        let size = fp.read(unsafe{ slice::from_raw_parts_mut(buffer_ptr as *mut u8, std::mem::size_of::<usize>())})?;
 
         if size != std::mem::size_of::<usize>()
         { 
@@ -39,15 +41,15 @@ impl <T> Window<T> where
         }
 
         let mut ret = Self {
-            acc: vec![T::default(); buffer[0]],
-            ext: vec![T::default(); buffer[0]]
+            acc: vec![T::default(); buffer],
+            ext: vec![T::default(); buffer]
         };
 
-        let acc = fp.read(unsafe{std::mem::transmute(&mut ret.acc[0..])})?;
-        let ext = fp.read(unsafe{std::mem::transmute(&mut ret.ext[0..])})?;
+        let acc = fp.read(unsafe{slice::from_raw_parts_mut(ret.acc.as_mut_ptr() as *mut u8, std::mem::size_of::<T>() * buffer)})?;
+        let ext = fp.read(unsafe{slice::from_raw_parts_mut(ret.ext.as_mut_ptr() as *mut u8, std::mem::size_of::<T>() * buffer)})?;
 
-        if acc != buffer[0] * std::mem::size_of::<usize>() ||
-           ext != buffer[0] * std::mem::size_of::<usize>()
+        if acc != buffer * std::mem::size_of::<T>() ||
+           ext != buffer * std::mem::size_of::<T>()
         {
             return Err(std::io::Error::new(std::io::ErrorKind::Other, "cannot read the data block"));
         }

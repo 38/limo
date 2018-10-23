@@ -1,4 +1,3 @@
-use crate::bamfile::BamFile;
 use crate::scanner::Scanner;
 use crate::depth_model::DepthModel;
 use crate::histogram::Histogram;
@@ -45,10 +44,8 @@ pub struct Event<'a, DM:DepthModel> {
 }
 
 impl <DM:DepthModel + Sized> Frontend<DM> {
-    pub fn new(fp:&BamFile, window_size: u32, copy_nums:&[u32], customized_dmp : Option<DM::ParamType>) -> Result<Self,()>
+    pub fn new(scanner:Scanner, window_size: u32, copy_nums:&[u32], customized_dmp : Option<DM::ParamType>) -> Result<Self,()>
     {
-        let scanner = Scanner::new(fp)?;
-
         let dmp = if let Some(param) = customized_dmp { param } else { DM::determine_default_param(&scanner, window_size, copy_nums) };
 
         let ret = Self {
