@@ -218,7 +218,7 @@ mod scanner_test {
         eprintln!("{:?}", scanner.get_corrected().iter::<i32>(2).collect::<Vec<i32>>());
 
         assert_eq!(scanner.get_corrected().iter::<i32>(2).collect::<Vec<i32>>(),     vec![3,5,6,6,5,3,2,1]);
-        assert_eq!(scanner.get_raw_window().iter::<i32>(2).collect::<Vec<i32>>(),    vec![4,6,7,7,6,4,3,2]);
+        assert_eq!(scanner.get_raw_window().iter::<i32>(2).collect::<Vec<i32>>(),    vec![3,5,6,6,5,4,3,2]);
         assert_eq!(scanner.get_low_mq_window().iter::<i32>(2).collect::<Vec<i32>>(), vec![1,1,1,1,1,0,0,0]);
 
         return Ok(());
