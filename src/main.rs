@@ -1,3 +1,4 @@
+/* TODO: support more chromosome && parallelize */
 mod hts;
 mod window;
 mod bamfile;
@@ -15,18 +16,15 @@ use self::models::linear::LinearModel;
 use self::scanner::Scanner;
 use self::event_pair::EventPairProc;
 use self::edge::EdgeDetector;
+use clap::{App, load_yaml};
 
-const BAM_PATH:&'static str = "/uufs/chpc.utah.edu/common/home/u0875014/data/NA12878.mapped.ILLUMINA.bwa.CEU.high_coverage_pcr_free.20130906.bam";
-const IR_PATH:&'static str = "/uufs/chpc.utah.edu/common/home/u0875014/limo-development/data/NA12878.chr1.limo";
-
-fn save_scan_result(scanner:&Scanner) -> Result<(), ()>
+fn save_scan_result(scanner:&Scanner, ir_path: &str) -> Result<(), ()>
 {
-    scanner.try_dump(&mut std::fs::File::create(IR_PATH).unwrap()).expect("cannot dump");
+    scanner.try_dump(&mut std::fs::File::create(ir_path).unwrap()).expect("cannot dump");
 
     return Ok(());
 }
 
-#[allow(dead_code)]
 fn dump_frontend_events<DM:crate::depth_model::DepthModel + std::fmt::Debug>(frontend: &Frontend<DM>, fp : &mut std::fs::File)
 {
     use std::io::Write;
@@ -36,7 +34,6 @@ fn dump_frontend_events<DM:crate::depth_model::DepthModel + std::fmt::Debug>(fro
     }
 }
 
-#[allow(dead_code)]
 fn dump_event_pairs<'a, DM:crate::depth_model::DepthModel + std::fmt::Debug>(event_pair:&Vec<(crate::frontend::Event<'a, DM>, crate::frontend::Event<'a, DM>)>, fp : &mut std::fs::File)
 {
     use std::io::Write;
@@ -49,24 +46,49 @@ fn dump_event_pairs<'a, DM:crate::depth_model::DepthModel + std::fmt::Debug>(eve
 
 fn main() -> Result<(), ()>
 {
-    let scanner = if !std::path::Path::new(IR_PATH).exists()
+    let options = load_yaml!("cli.yml");
+    let matches = App::from_yaml(options).get_matches();
+
+    let alignment = matches.value_of("alignment-file").unwrap();
+    let scanner_dump = matches.value_of("scanner-dump-path").unwrap_or(alignment);
+    let no_scanner_dump = matches.is_present("no-scanner-dump");
+
+    let ir_path = format!("{}.limodump-{}", scanner_dump, 0);
+
+    let scanner = if no_scanner_dump || !std::path::Path::new(&ir_path[0..]).exists()
     {
-        let bam = BamFile::new(BAM_PATH, 0, None)?;
+        eprintln!("Scanner dump is not available, load from the alignment file");
+        let bam = BamFile::new(scanner_dump, 0, None)?;
         let scanner = Scanner::new(&bam)?;
-        save_scan_result(&scanner)?;
+        if !no_scanner_dump { save_scan_result(&scanner, &ir_path[0..])?; }
         scanner
     }
     else
     {
-        Scanner::try_load(&mut std::fs::File::open(IR_PATH).unwrap()).expect("Cannot load")
+        eprintln!("Loading depth information from scanner dump");
+        Scanner::try_load(&mut std::fs::File::open(ir_path).unwrap()).expect("Cannot load")
     };
 
-    let target_copy_nums = [0,1];
+    let copy_nums = matches.value_of("copy-nums").unwrap();
+    let copy_nums:Vec<_> =  copy_nums.split(",").map(|s| u32::from_str_radix(s, 10).unwrap()).collect();
 
-    let frontend = Frontend::<LinearModel>::new(scanner, 300, &target_copy_nums, None)?;
+    let window_size = u32::from_str_radix(matches.value_of("window-size").unwrap_or("300"), 10).unwrap();
+    
+    let frontend = Frontend::<LinearModel>::new(scanner, window_size, &copy_nums[0..], None)?;
 
+    if matches.is_present("dump-frontend-events")
+    {
+        let mut output = std::fs::File::create(matches.value_of("dump-frontend-events").unwrap()).expect("Unable to open the file");
+        dump_frontend_events(&frontend, &mut output);
+    }
 
-    let event_pair:Vec<_> = EventPairProc::new(&frontend).collect();
+    let event_pair: Vec<_> = EventPairProc::new(&frontend).collect();
+
+    if matches.is_present("dump-event-pairs")
+    {
+        let mut output = std::fs::File::create(matches.value_of("dump-event-pairs").unwrap()).expect("Unable to open the file");
+        dump_event_pairs(&event_pair, &mut output);
+    }
 
     let mut edge_detect = EdgeDetector::new(&frontend, frontend.get_scan_size() * 2);
     
@@ -77,6 +99,6 @@ fn main() -> Result<(), ()>
             println!("{}\t{}\t{}", sv.chrom, sv.left_pos, sv.right_pos);
         }
     }
-    
+
     return Ok(()); 
 }

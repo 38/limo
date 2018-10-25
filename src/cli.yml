@@ -1,0 +1,52 @@
+name: Limo - The LInear MOdel CNV Detection   
+args:
+    - dump-model-events:
+        short: M
+        long: dump-model-events
+        value_name: FILE
+        help: Dump the linear model output
+        takes_value: true
+    - dump-event-pairs:
+        short: P
+        long: dump-event-pairs
+        value_name: FILE
+        help: Dump the paired events
+        takes_value: true
+    - no-scanner-dump:
+        short: n
+        long: no-scanner-dump
+        help: Do not use the scanner dump / Do not produce scanner dump
+    - scanner-dump-path:
+        short: S
+        long: scanner-dump-path
+        help: Specify the path to the scanner dump
+        value_name: PATH
+        takes_value: true
+    - copy-nums:
+        takes_value: true
+        short: 'C'
+        long:  'copy-nums'
+        required: true
+        value_name: LIST_OF_COPY_NUMS
+        help: Specify the target copy numbers needs to be detected
+    - window-size:
+        takes_value: true
+        short: W
+        long: window-size
+        help: Sepficy the size of the window
+        value_name: WINDOW_SIZE
+    - reference:
+        short: r
+        long: reference
+        help: The reference file (only used for CRAM input)
+        takes_value: true
+        value_name: REFERENCE_FILE
+    - alignment-file:
+        required: true
+        takes_value: true
+        index: 1
+        help: The input BAM/CRAM file
+    - chromosomes:
+        takes_value: true
+        index: 2
+        help: The chromosome to scan 
