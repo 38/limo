@@ -7,16 +7,18 @@ pub trait AlignmentType {
     fn get_begin(&self) -> u32;
     fn get_end(&self) -> u32;
     fn get_length(&self) -> u32;
+    fn get_qpos(&self) -> (u32, u32);
     fn check_is_split_read(&self) -> bool;
     fn get_mqual(&self) -> u32;
 }
 
 impl <'a> AlignmentType for Alignment<'a> {
-    fn get_begin(&self) -> u32 { self.begin() }
-    fn get_end(&self) -> u32 { self.end() }
-    fn get_length(&self) -> u32 { self.length() }
+    fn get_begin(&self) -> u32 { self.ref_begin() }
+    fn get_end(&self) -> u32 { self.ref_end() }
+    fn get_length(&self) -> u32 { self.ref_end() - self.ref_begin() }
     fn check_is_split_read(&self) -> bool {self.is_split_read() }
     fn get_mqual(&self) -> u32 {self.mqual() }
+    fn get_qpos(&self) -> (u32, u32) { (self.begin(), self.end()) }
 }
 
 pub trait Input<'a, T:AlignmentType> {
@@ -140,7 +142,7 @@ impl Scanner {
                {
                    ret.common_read_len = read.get_length();
                }
-           }
+           } else { ret.common_read_len_cnt += 1; }
 
            let (begin, end) = (read.get_begin() as usize, read.get_end() as usize);
 
@@ -150,10 +152,10 @@ impl Scanner {
 
            if read.get_mqual() == 0 
            {
-               ret.low_mq_window.accumulate(begin, end, 1);
+               ret.low_mq_window.accumulate(begin as usize, end as usize, 1);
            }
 
-           ret.corrected_window.accumulate(begin, end, 1);
+           ret.corrected_window.accumulate(begin as usize, end as usize, 1);
         }
 
         return Ok(ret);
@@ -175,6 +177,7 @@ pub mod mock_bam {
         fn get_length(&self) -> u32 { (self.end - self.begin) as u32 }
         fn check_is_split_read(&self) -> bool { self.split }
         fn get_mqual(&self) -> u32 { self.qual }
+        fn get_qpos(&self) -> (u32, u32) { (self.begin, self.end) }
     }
 
     impl <'a> Input<'a, &'a TestAlignment> for (usize, Vec<TestAlignment>) {

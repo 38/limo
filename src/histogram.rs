@@ -24,6 +24,12 @@ impl Histogram {
         }
     }
 
+    #[allow(dead_code)]
+    pub fn get_count(&self, val:u32) -> u32
+    {
+        return self.freq[val as usize];
+    }
+
     pub fn get_average(&mut self) -> f64 
     {
         if self.average.is_none()

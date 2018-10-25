@@ -11,7 +11,7 @@ pub struct EventPairProc<'a, DM : DepthModel> {
 
 impl <'a, DM : DepthModel> EventPairProc<'a, DM> 
 {
-    pub fn new(fe:&'a mut Frontend<DM>) -> Self
+    pub fn new(fe:&'a Frontend<DM>) -> Self
     {
         let target_copy_nums = fe.get_copy_nums();
         let max_copy_num = target_copy_nums.iter().fold(0, |a,b| std::cmp::max(a,*b));
@@ -51,7 +51,6 @@ impl <'a, DM : DepthModel> Iterator for EventPairProc<'a, DM>
                         match current.side 
                         {
                            Side::Left => {
-                               /* TODO: filter on the average exclude-rate and len */
                                if self.left_side[cur_cn].is_none() ||
                                   self.left_side[cur_cn].as_ref().unwrap().score > current.score
                                {
@@ -70,6 +69,17 @@ impl <'a, DM : DepthModel> Iterator for EventPairProc<'a, DM>
                                if ret.is_some()
                                {
                                    self.left_side[cur_cn] = None;
+
+                                   /* We assume that the SV doesn't overlap, so once we found a
+                                    * good candidate, just remove everything that doesn't that good
+                                    * and would overlap with current we have */
+                                   for i in 0..self.left_side.len()
+                                   {
+                                       if self.left_side[i].is_some() && self.left_side[i].as_ref().unwrap().score > ret.as_ref().unwrap().0.score
+                                       {
+                                           self.left_side[i] = None;
+                                       }
+                                   }
                                }
                            }
                         }
