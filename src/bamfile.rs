@@ -209,6 +209,27 @@ impl <'a> Alignment<'a> {
     pub fn sequence(&self) -> Sequence { Sequence { alignment : self } }
     pub fn cigar(&self, idx:usize) -> Option<Cigar> { Cigar::from_alignment(self, idx) }
     pub fn alignment(&self) -> MapInfoIter { MapInfoIter::new(self) }
+    pub fn ref_begin(&self) -> u32 
+    {
+        self.begin()
+    }
+
+    pub fn ref_end(&self) -> u32
+    {
+        let mut ret = self.end();
+        if self.data.core.n_cigar > 0
+        {
+            if let Some(cigar) = self.cigar((self.data.core.n_cigar as usize) - 1)
+            {
+                match cigar.op 
+                {
+                    CigarOps::Soft => { ret -= cigar.len; }
+                    _ => ()
+                }
+            }
+        }
+        return ret;
+    }
 }
 
 #[allow(dead_code)]

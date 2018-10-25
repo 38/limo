@@ -58,12 +58,20 @@ impl <DM:DepthModel + Sized> Frontend<DM> {
         return Ok(ret);
     }
 
+    #[allow(dead_code)]
+    pub fn get_scan_size(&self) -> u32 { self.window_size + self.scanner.get_common_read_length() }
+
     pub fn get_copy_nums(&self) -> &[u32] 
     {
         return &self.copy_nums[0..];
     }
 
-    pub fn iter<'a>(&'a mut self) -> FrontendIter<'a, DM> 
+    #[allow(dead_code)]
+    pub fn get_scanner(&self) -> &Scanner { &self.scanner }
+    #[allow(dead_code)]
+    pub fn get_scanner_mut(&mut self) -> &mut Scanner { &mut self.scanner }
+
+    pub fn iter<'a>(&'a self) -> FrontendIter<'a, DM> 
     {
         return FrontendIter::new(self);
     }
@@ -90,7 +98,7 @@ impl <'a, DM:DepthModel + Sized> FrontendIter<'a, DM>
         self.right_mod[0..].iter_mut().for_each(|m| m.model.put(dep));
     }
 
-    fn new(obj:&'a mut Frontend<DM>) -> Self
+    fn new(obj:&'a Frontend<DM>) -> Self
     {
         let mut hist = Histogram::new(1024);
         obj.scanner.get_corrected().iter(obj.window_size as usize).for_each(|v:i32| hist.add(v as u32));
