@@ -10,6 +10,7 @@ pub struct EdgeDetector<'a, DM:DepthModel> {
     histogram: Histogram,
     raw_dep  : Box<Vec<i32>>,
     lmq_dep  : Box<Vec<i32>>,
+    target_copy_num: Vec<u32>,
     phantom: PhantomData<&'a DM>
 }
 
@@ -25,12 +26,15 @@ pub struct Variant<'a> {
 
 impl <'a, DM:DepthModel> EdgeDetector<'a, DM> {
     #[allow(dead_code)]
-    pub fn new(frontend:&'a Frontend<DM>, scan_size: u32) -> Self 
+    pub fn new(frontend:&'a Frontend<DM>, scan_size: u32, copy_nums: &[u32]) -> Self 
     {
         let raw_dep: Box<Vec<i32>> =  Box::new(frontend.get_scanner().get_raw_window().iter(1).collect());
         let lmq_dep: Box<Vec<i32>> = Box::new(frontend.get_scanner().get_low_mq_window().iter(1).collect());
         let mut histogram = Histogram::new(1024);
         raw_dep.iter().for_each(|v:&i32| histogram.add(*v as u32));
+        let mut target_copy_num = vec![0u32;copy_nums.len()];
+        target_copy_num[0..].clone_from_slice(copy_nums);
+        target_copy_num[0..].sort();
 
         return Self { 
             chrom: frontend.get_scanner().get_chrom(),
@@ -38,6 +42,7 @@ impl <'a, DM:DepthModel> EdgeDetector<'a, DM> {
             raw_dep,
             lmq_dep,
             histogram,
+            target_copy_num,
             phantom: PhantomData 
         };
     }
@@ -148,7 +153,18 @@ impl <'a, DM:DepthModel> EdgeDetector<'a, DM> {
         }
         
         return match ret {
-            Some(ref variant) => if (0.5 * (copy_num as f64) - variant.mean).abs() < 0.2 { ret } else { None }
+            Some(ref variant) => if (0.5 * (copy_num as f64) - variant.mean).abs() < 0.2 { ret } else 
+            { 
+                for copy_num in self.target_copy_num.iter()
+                {
+                    if (0.5 * (*copy_num as f64) - variant.mean).abs() < 0.2 
+                    {
+                        ret.as_mut().unwrap().copy_num = *copy_num;
+                        return ret;
+                    }
+                }
+                None
+            }
             None => None
         };
     }

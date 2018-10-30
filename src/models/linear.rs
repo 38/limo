@@ -55,9 +55,10 @@ impl DepthModel for LinearModel {
         else if left < right { -1 }
         else { 1 };
     }
-    fn score_threshold(score : Self::Output) -> bool
+    fn score_threshold(win_size:u32, score : Self::Output) -> bool
     {
-        return score < 7000.0;
+        /* TODO: how to determine the threshold dynamically? */
+        return score < (7000.0 / 550.0) * ((win_size + 250) as f64);
     }
 
     fn create_model(copy_num:u32, left: bool, p:u32) -> Self

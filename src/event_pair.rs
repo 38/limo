@@ -6,6 +6,7 @@ pub struct EventPairProc<'a, DM : DepthModel> {
     last_pos : u32,
     recent   : Vec<Event<'a, DM>>,
     max_copy_num : u32,
+    window_size: u32,
     fe_iter  : FrontendIter<'a, DM>
 }
 
@@ -20,7 +21,8 @@ impl <'a, DM : DepthModel> EventPairProc<'a, DM>
             last_pos  : 0,
             recent    : Vec::new(),
             max_copy_num,
-            fe_iter   : fe.iter()
+            fe_iter   : fe.iter(),
+            window_size: fe.get_window_size()
         };
     }
 }
@@ -60,8 +62,8 @@ impl <'a, DM : DepthModel> Iterator for EventPairProc<'a, DM>
                            Side::Right => {
                                if let Some(ref left_side) = self.left_side[cur_cn]
                                {
-                                   if DM::score_threshold(Clone::clone(&left_side.score)) && 
-                                      DM::score_threshold(Clone::clone(&current.score))
+                                   if DM::score_threshold(self.window_size, Clone::clone(&left_side.score)) && 
+                                      DM::score_threshold(self.window_size, Clone::clone(&current.score))
                                    {
                                        ret = Some((Clone::clone(left_side), Clone::clone(current)));
                                    }

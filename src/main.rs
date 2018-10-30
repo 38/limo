@@ -9,6 +9,8 @@ mod models;
 mod frontend;
 mod event_pair;
 mod edge;
+#[cfg(with_task)]
+mod task;
 
 use self::bamfile::BamFile;
 use self::frontend::Frontend;
@@ -40,7 +42,7 @@ fn dump_event_pairs<'a, DM:crate::depth_model::DepthModel + std::fmt::Debug>(eve
 
     for ep in event_pair
     {
-        write!(fp, "{}\t{}\t{}\t{}", ep.0.chrom, ep.0.pos, ep.1.pos, format!("ls:{:?};rs:{:?};cn:{}", ep.0.score, ep.1.score, ep.0.copy_num));
+        write!(fp, "{}\t{}\t{}\t{}\n", ep.0.chrom, ep.0.pos, ep.1.pos, format!("ls:{:?};rs:{:?};cn:{}", ep.0.score, ep.1.score, ep.0.copy_num));
     }
 }
 
@@ -58,7 +60,7 @@ fn main() -> Result<(), ()>
     let scanner = if no_scanner_dump || !std::path::Path::new(&ir_path[0..]).exists()
     {
         eprintln!("Scanner dump is not available, load from the alignment file");
-        let bam = BamFile::new(scanner_dump, 0, None)?;
+        let bam = BamFile::new(alignment, 0, None)?;
         let scanner = Scanner::new(&bam)?;
         if !no_scanner_dump { save_scan_result(&scanner, &ir_path[0..])?; }
         scanner
@@ -90,7 +92,7 @@ fn main() -> Result<(), ()>
         dump_event_pairs(&event_pair, &mut output);
     }
 
-    let mut edge_detect = EdgeDetector::new(&frontend, frontend.get_scan_size() * 2);
+    let mut edge_detect = EdgeDetector::new(&frontend, frontend.get_scan_size() * 2, &copy_nums[0..]);
     
     for ref ep in event_pair
     {

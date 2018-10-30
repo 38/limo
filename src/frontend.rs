@@ -61,6 +61,9 @@ impl <DM:DepthModel + Sized> Frontend<DM> {
     #[allow(dead_code)]
     pub fn get_scan_size(&self) -> u32 { self.window_size + self.scanner.get_common_read_length() }
 
+    #[allow(dead_code)]
+    pub fn get_window_size(&self) -> u32 { self.window_size }
+
     pub fn get_copy_nums(&self) -> &[u32] 
     {
         return &self.copy_nums[0..];
