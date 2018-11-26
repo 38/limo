@@ -151,6 +151,27 @@ impl <'a, DM:DepthModel> EdgeDetector<'a, DM> {
                 }
             }
         }
+
+        /*if ret.is_some() &&
+           (0.5 * (copy_num as f64) - ret.as_ref().unwrap().mean).abs() > 0.2 &&
+           (0.5 * (copy_num as f64) - ret.as_ref().unwrap().mean).abs() < 0.35
+        {
+            let left = event.0.pos;
+            let right = event.1.pos;
+            let (avg,sd) = self.compute_norms(left, right);
+
+            if (avg - 0.5 * (copy_num as f64)).abs() < 0.10
+            {
+                ret = Some(Variant {
+                    chrom: self.chrom,
+                    left_pos: left,
+                    right_pos: right,
+                    copy_num: copy_num,
+                    mean: avg,
+                    sd
+                });
+            }
+        }*/
         
         return match ret {
             Some(ref variant) => if (0.5 * (copy_num as f64) - variant.mean).abs() < 0.2 { ret } else 

@@ -93,14 +93,22 @@ fn main() -> Result<(), ()>
     }
 
     let mut edge_detect = EdgeDetector::new(&frontend, frontend.get_scan_size() * 2, &copy_nums[0..]);
+
+    let mut event_pair_count = 0;
     
     for ref ep in event_pair
     {
+        event_pair_count += 1;
         if let Some(sv) = edge_detect.detect_edge(ep) 
         {
-            println!("{}\t{}\t{}", sv.chrom, sv.left_pos, sv.right_pos);
+            println!("{}\t{}\t{}\t{{\"chr\":\"{}\",\"begin\":{},\"end\":{},\"copy_num\":{},\"dep_avg\":{:.3},\"dep_var\":{:.3},\"left_model\":{:.3},\"right_model\":{:.3}}}", 
+                     sv.chrom, sv.left_pos, sv.right_pos,
+                     sv.chrom, sv.left_pos, sv.right_pos,
+                     sv.copy_num, sv.mean, sv.sd, ep.0.score, ep.1.score);
         }
     }
+
+    eprintln!("# of event pair poped up: {}", event_pair_count);
 
     return Ok(()); 
 }

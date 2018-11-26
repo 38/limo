@@ -1,0 +1,7 @@
+[package]
+name = "frontend"
+version = "0.1.0"
+authors = ["u0875014"]
+edition = "2018"
+
+[dependencies]
