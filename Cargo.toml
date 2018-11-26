@@ -1,13 +1,18 @@
+cargo-features = ["profile-overrides"]
+
 [package]
 name = "limo"
 version = "0.1.0"
-authors = ["Hao Hou <ghost89413@gmail.com>"]
+authors = ["Hao Hou <hao.hou@utah.edu>"]
 edition = "2018"
 
-[build-dependencies]
-bindgen = "*"
-num_cpus = "*"
+
+[dependencies.frontend]
+path = "libs/frontend"
 
 [dependencies.clap]
 version = "*"
 features = ["yaml"]
+
+[profile.dev.overrides.frontend]
+opt-level=3

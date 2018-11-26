@@ -1,7 +1,9 @@
 [package]
 name = "frontend"
 version = "0.1.0"
-authors = ["u0875014"]
+authors = ["Hao Hou <hao.hou@utah.edu>"]
 edition = "2018"
 
-[dependencies]
+[build-dependencies]
+bindgen = "*"
+num_cpus = "*"

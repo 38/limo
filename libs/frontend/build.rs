@@ -5,13 +5,16 @@ use bindgen::Builder as BG;
 
 use num_cpus::get as get_num_cpus;
 
-fn create_hts_bindings() -> Result<(), ()>
+use std::env;
+
+fn create_hts_bindings(base:&str) -> Result<(), ()>
 {
+    let include_param = format!("-I{}/htslib/htslib", base);
     if !Path::new("generated/htslib.rs").exists()
     {
         BG::default()
             .header("include/htslib_wrap.h")
-            .clang_arg("-Ihtslib/htslib")
+            .clang_arg(include_param.as_str())
             .layout_tests(false)
             .generate()?
             .write_to_file("generated/htslib.rs")
@@ -19,10 +22,12 @@ fn create_hts_bindings() -> Result<(), ()>
     }
     Ok(())
 }
-fn main() -> Result<(), ()>
+fn main() -> Result<(), std::io::Error>
 {
-    create_hts_bindings()?;
-    if !Path::new("htslib/libhts.a").exists()
+    let base = format!("{}/../", env::current_dir()?.as_path().to_str().unwrap());
+    let hts_bin_path = format!("{}/htslib/libhts.a", base);
+    if let Err(_) = create_hts_bindings(base.as_str()) { return Err(std::io::Error::new(std::io::ErrorKind::Other, "Bindgen failed")); }
+    if !Path::new(hts_bin_path.as_str()).exists()
     {
         Command::new("make")
             .arg(format!("-j{}", get_num_cpus()))
@@ -30,7 +35,7 @@ fn main() -> Result<(), ()>
             .spawn()
             .expect("Unable to call makefile for htslib");
     }
-    println!("cargo:rustc-link-search=htslib/");
+    println!("cargo:rustc-link-search={}/htslib/", base);
     println!("cargo:rustc-link-lib=hts");
     println!("cargo:rustc-link-lib=z");
     println!("cargo:rustc-link-lib=m");

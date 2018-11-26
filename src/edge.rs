@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
-use crate::depth_model::DepthModel;
-use crate::frontend::{Frontend, Event, Side};
-use crate::histogram::Histogram;
+use frontend::depth_model::DepthModel;
+use frontend::frontend::{Frontend, Event, Side};
+use frontend::histogram::Histogram;
 
 
 pub struct EdgeDetector<'a, DM:DepthModel> {
