@@ -209,6 +209,10 @@ impl <'a> Alignment<'a> {
     pub fn sequence(&self) -> Sequence { Sequence { alignment : self } }
     pub fn cigar(&self, idx:usize) -> Option<Cigar> { Cigar::from_alignment(self, idx) }
     pub fn alignment(&self) -> MapInfoIter { MapInfoIter::new(self) }
+
+    pub fn get_flags(&self) -> u16 { self.data.core.flag }
+    pub fn get_isize(&self) -> i32 { self.data.core.isize }
+
     pub fn ref_begin(&self) -> u32 
     {
         self.begin()

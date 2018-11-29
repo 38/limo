@@ -50,3 +50,9 @@ args:
         takes_value: true
         index: 2
         help: The chromosome to scan 
+    - prob-validate:
+        takes_value: true
+        short: 'p'
+        long: 'prob-validate'
+        value_name: THRESHOLD|off
+        help: Specify the treshold for the probability validation

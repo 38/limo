@@ -14,5 +14,10 @@ path = "libs/frontend"
 version = "*"
 features = ["yaml"]
 
+[dependencies]
+serde = "*"
+serde_derive = "*"
+serde_json = "*"
+
 [profile.dev.overrides.frontend]
 opt-level=3

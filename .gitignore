@@ -4,4 +4,4 @@ unused/*
 **/*.swp
 **/*.swq
 **/*.swo
-
+**/target/*

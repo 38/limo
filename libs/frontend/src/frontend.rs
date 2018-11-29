@@ -23,8 +23,8 @@ pub struct Frontend<DM:DepthModel + Sized> {
 }
 
 pub struct FrontendIter<'a, DM:DepthModel + Sized> {
-    pos : u32,
     chrom: &'a str,
+    pos : u32,
     correct_iter: WindowIter<'a, i32, i32>,
     exclude_iter: WindowIter<'a, i32, i32>,
     hist    : Histogram,
@@ -156,7 +156,7 @@ impl <'a, DM:DepthModel + Sized> FrontendIter<'a, DM>
 
 impl <'a, DM : DepthModel + Sized> Iterator for FrontendIter<'a, DM>
 {
-    type Item = Event<'a,DM>;
+    type Item = Event<'a, DM>;
     fn next(&mut self) -> Option<Self::Item>
     {
         if let Some((dep, total_dep, lowmq_dep)) = self.get_normalized_depth()
@@ -195,23 +195,23 @@ impl <'a, DM : DepthModel + Sized> Iterator for FrontendIter<'a, DM>
             if best_side.is_some()
             {
                 return Some(Event {
-                    chrom: self.chrom,
                     score: best_score,
                     pos,
                     side : best_side.unwrap(),
                     copy_num: best_copy_num.unwrap(),
-                    total_dep, lowmq_dep
+                    total_dep, lowmq_dep,
+                    chrom: self.chrom
                 });
             }
             else 
             {
                 return Some(Event {
-                    chrom: self.chrom,
                     score : Default::default(),
                     pos,
                     side  : Side::Left,
                     copy_num: u32::max_value(),
-                    total_dep, lowmq_dep
+                    total_dep, lowmq_dep,
+                    chrom: self.chrom
                 });
             }
         }

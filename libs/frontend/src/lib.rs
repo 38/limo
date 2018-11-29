@@ -18,18 +18,15 @@ pub mod prelude {
     use crate::event_pair::EventPairProc;
     use crate::depth_model::DepthModel;
 
-    pub struct Frontend<'a, DM:DepthModel> {
-        alignment:&'a str, 
-        scanner_dump:&'a str, 
-        no_scanner_dump:bool, 
-        chrom:u32, 
-        copy_nums:Vec<u32>, 
-        window_size:u32, 
-        dump_fe: Option<&'a str>, 
-        dump_ep: Option<&'a str>,
-        pub result: Result<Vec<(Event<'a, DM>, Event<'a, DM>), ()>>,
-        pub scanner:Scanner,
-        frontend: DM
+    pub struct FrontendParam<'a> {
+        pub alignment:&'a str, 
+        pub scanner_dump:&'a str, 
+        pub no_scanner_dump:bool, 
+        pub chrom:u32, 
+        pub copy_nums:Vec<u32>, 
+        pub window_size:u32, 
+        pub dump_fe: Option<&'a str>, 
+        pub dump_ep: Option<&'a str>
     }
 
     fn save_scan_result(scanner:&Scanner, ir_path: &str) -> Result<(), ()>
@@ -58,42 +55,82 @@ pub mod prelude {
         }
     }
 
-    impl Frontend {
-        pub fn run_linear_frontend(&mut self) -> Result<Vec<(Event, Event)>, ()> 
+    pub struct Context<DM:DepthModel> {
+        pub frontend : Frontend<DM>,
+        fe_path: Option<String>,
+        ep_path: Option<String>
+    }
+
+    impl <DM:DepthModel + std::fmt::Debug> Context<DM> {
+        pub fn get_result<'a>(&'a self) -> Vec<(Event<'a, DM>, Event<'a, DM>)> 
         {
-            let ir_path = format!("{}.limodump-{}", scanner_dump, 0);
-
-            let scanner = if no_scanner_dump || !std::path::Path::new(&ir_path[0..]).exists()
+            if self.fe_path.is_some()
             {
-                eprintln!("Scanner dump is not available, load from the alignment file");
-                let bam = BamFile::new(alignment, 0, None)?;
-                let scanner = Scanner::new(&bam)?;
-                if !no_scanner_dump { save_scan_result(&scanner, &ir_path[0..])?; }
-                scanner
-            }
-            else
-            {
-                eprintln!("Loading depth information from scanner dump");
-                Scanner::try_load(&mut std::fs::File::open(ir_path).unwrap()).expect("Cannot load")
-            };
-            
-            let frontend = Frontend::<LinearModel>::new(scanner, window_size, &copy_nums[0..], None)?;
-
-            if dump_fe.is_some()
-            {
-                let mut output = std::fs::File::create(dump_fe.unwrap()).expect("Unable to open the file");
-                dump_frontend_events(&frontend, &mut output);
+                let output = std::fs::File::create(self.fe_path.as_ref().unwrap().as_str());
+                dump_frontend_events(&self.frontend, &mut output.unwrap());
             }
 
-            let event_pair: Vec<_> = EventPairProc::new(&frontend).collect();
+            let event_pair = EventPairProc::new(&self.frontend).collect();
 
-            if dump_ep.is_some()
+            if self.ep_path.is_some()
             {
-                let mut output = std::fs::File::create(dump_ep.unwrap()).expect("Unable to open the file");
-                dump_event_pairs(&event_pair, &mut output);
+                let output = std::fs::File::create(self.ep_path.as_ref().unwrap().as_str());
+                dump_event_pairs(&event_pair, &mut output.unwrap());
             }
 
-            return Ok(event_pair);
+            event_pair
         }
+    }
+
+    pub fn run_linear_frontend<'a>(param: FrontendParam<'a>) -> Result<Context<LinearModel>, ()>
+    {
+        let ir_path = format!("{}.limodump-{}", param.scanner_dump, 0);
+
+        let scanner = if param.no_scanner_dump || !std::path::Path::new(&ir_path[0..]).exists()
+        {
+            eprintln!("Scanner dump is not available, load data from the alignment file: {} chromsome: {}", param.alignment, param.chrom);
+            let bam = BamFile::new(param.alignment, param.chrom, None)?;
+            let scanner = Scanner::new(&bam)?;
+            if !param.no_scanner_dump { save_scan_result(&scanner, &ir_path[0..])?; }
+            scanner
+        }
+        else
+        {
+            eprintln!("Loading depth information from scanner dump for file: {} chromsome: {}", param.alignment, param.chrom);
+            Scanner::try_load(&mut std::fs::File::open(ir_path).unwrap()).expect("Cannot load")
+        };
+    
+        let ret = Context{ 
+            frontend: Frontend::<LinearModel>::new(scanner, param.window_size, &param.copy_nums[0..], None)?,
+            fe_path: if let Some(fe) = param.dump_fe { Some(String::from(fe)) } else {None},
+            ep_path: if let Some(ep) = param.dump_ep { Some(String::from(ep)) } else {None}
+        };
+
+        return Ok(ret);
+    }
+
+    pub fn make_linear_event<'a>(chrom: &'a str, left: u32, right: u32, copy_num: u32) -> (Event<'a, LinearModel>, Event<'a, LinearModel>)
+    {
+        let left = Event {
+            chrom: chrom,
+            side : crate::frontend::Side::Left,
+            score: 0.0,
+            pos  : left,
+            copy_num: copy_num,
+            total_dep: 0,
+            lowmq_dep: 0
+        };
+        
+        let right = Event {
+            chrom: chrom,
+            side : crate::frontend::Side::Right,
+            score: 0.0,
+            pos  : right,
+            copy_num: copy_num,
+            total_dep: 0,
+            lowmq_dep: 0
+        };
+
+        return (left, right);
     }
 }
