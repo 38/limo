@@ -31,7 +31,7 @@ fn main() -> Result<(), std::io::Error>
     {
         Command::new("make")
             .arg(format!("-j{}", get_num_cpus()))
-            .current_dir("htslib")
+            .current_dir(format!("{}/htslib", base))
             .spawn()
             .expect("Unable to call makefile for htslib");
     }
