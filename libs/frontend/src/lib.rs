@@ -18,6 +18,7 @@ pub mod prelude {
     use crate::event_pair::EventPairProc;
     use crate::depth_model::DepthModel;
 
+    #[derive(Clone)]
     pub struct FrontendParam<'a> {
         pub alignment:&'a str, 
         pub scanner_dump:&'a str, 
@@ -84,7 +85,7 @@ pub mod prelude {
 
     pub fn run_linear_frontend<'a>(param: FrontendParam<'a>) -> Result<Context<LinearModel>, ()>
     {
-        let ir_path = format!("{}.limodump-{}", param.scanner_dump, 0);
+        let ir_path = format!("{}.limodump-{}", param.scanner_dump, param.chrom);
 
         let scanner = if param.no_scanner_dump || !std::path::Path::new(&ir_path[0..]).exists()
         {

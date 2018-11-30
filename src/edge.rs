@@ -65,8 +65,6 @@ impl <'a, DM:DepthModel> EdgeDetector<'a, DM> {
             read_size: frontend.get_scanner().get_common_read_length()
         };
 
-        eprintln!("The PV treshold = {}", ret.pv_threshold);
-
         return ret;
     }
 

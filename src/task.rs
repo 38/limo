@@ -1,142 +1,148 @@
-use std::sync::Arc;
-use clap::ArgMatches;
-use crate::bamfile::BamFile;
-use crate::scanner::Scanner;
-use crate::frontend::{Frontend, Event};
-use crate::depth_model::DepthModel;
-use std::fs::File;
-use std::io::Write;
-use std::fmt::Debug;
-use std::path::Path;
-
-#[derive(Clone)]
-pub struct TaskDesc {
-    bam_path:Arc<String>,
-    copy_nums:Arc<Vec<u32>>,
-    window_size: u32,
-    scanner_dump_prefix: Option<Arc<String>>,
-    event_dump_prefix: Option<Arc<String>>,
-    paired_dump_prefix:Option<Arc<String>>
-}
-
+use std::cmp::{max,min};
+use frontend::prelude::*;
+use crate::edge::{EdgeDetector, Variant};
 pub struct Task {
-    desc :TaskDesc,
-    chrom_id: u32
+    pub alignment: String,
+    pub scanner_dump: String,
+    pub no_scanner_dump: bool,
+    pub chrom: u32,
+    pub dump_fe: Option<String>,
+    pub dump_ep: Option<String>,
+    pub copy_nums: Vec<u32>,
+    pub window_size: u32,
+    pub enable_pv: bool,
+    pub pv_threshold: f64
 }
 
 impl Task {
-    pub fn new(desc:&TaskDesc, chrom: u32) -> Self 
+
+    pub fn run(&self) -> Result<(), ()>
     {
-        return Task {
-            desc: desc.clone(),
-            chrom_id: chrom
+        let frontend_param = FrontendParam {
+            alignment: self.alignment.as_str(),
+            scanner_dump: self.scanner_dump.as_str(),
+            no_scanner_dump: self.no_scanner_dump,
+            chrom: self.chrom,
+            dump_fe: self.dump_fe.iter().fold(None, |_,x| Some(x.as_str())),
+            dump_ep: self.dump_ep.iter().fold(None, |_,x| Some(x.as_str())),
+            copy_nums: self.copy_nums.clone(),
+            window_size: self.window_size
         };
-    }
 
-    fn load_bam(path:&str) -> Result<Scanner, ()>
-    {
-        let bam = BamFile::new(path, 0, None)?;
-        let scanner = Scanner::new(&bam)?;
-        return Ok(scanner);
-    }
+        let prob_args = if self.enable_pv {
+            Some((frontend_param.alignment, None, frontend_param.chrom, self.pv_threshold))
+        } else { None };
 
-    fn load_scanner_dump(path:&str) -> Result<Scanner, ()>
-    {
-        return Ok(Scanner::try_load(&mut File::open(path).unwrap()).expect("Cannot load scanner dump"));
-    }
 
-    fn dump_scanner(scanner: &Scanner, path:&str) -> Result<(), ()>
-    {
-        scanner.try_dump(&mut File::open(path).unwrap()).expect("Cannot dump the scanner");
+        let frontend_ctx = run_linear_frontend(frontend_param.clone())?;
+
+        eprintln!("Collecting event pairs for chromosome #{}", frontend_param.chrom);
+        let event_pair = frontend_ctx.get_result();
+        
+        let mut edge_detect = EdgeDetector::new(&frontend_ctx.frontend, frontend_ctx.frontend.get_scan_size() * 2, &frontend_param.copy_nums[0..], prob_args);
+        
+        eprintln!("Post processing the poped events: Chromosome: {}", frontend_param.chrom);
+
+        let report_unit = 10000000;
+        let total_mb = event_pair.last().iter().fold(0, |_, e| e.0.pos) / 1000000;
+        let mut last_mb = report_unit;
+        let mut event_count = 0;
+        let mut passed = 0;
+
+        let mut events:Vec<_> = event_pair.iter().filter_map(|ep| {
+            if ep.0.pos > last_mb {
+                eprintln!("Postprocessed: Chromosome:{}, Offset:{}MB/{}MB, FE_Events:{}, Passed:{}", ep.0.chrom, last_mb/1000000, total_mb, event_count, passed);
+                last_mb = ((ep.0.pos + report_unit - 1) / report_unit) * report_unit;
+            }
+            event_count += 1;
+            edge_detect.detect_edge(ep, true).map(|x| { passed += 1; x })
+        }).collect();
+
+        let events = {
+            eprintln!("Merging the clustered events: Chromosome: #{}", frontend_param.chrom);
+            events.sort_by(|a,b| a.left_pos.cmp(&b.left_pos));
+            let mut cluster_range = (0,0);
+            let mut cluster = Vec::<&Variant>::new();
+            let mut result = Vec::<Variant>::new();
+
+            let max_dist = 1000;
+
+            let mut iter = events.iter();
+            loop
+            {
+                let mut should_merge = false;
+                let next_sv = iter.next();
+                if let Some(sv) = next_sv
+                {
+                    if max(sv.left_pos - max_dist, cluster_range.0) < min(sv.right_pos + max_dist, cluster_range.1) 
+                    {
+                        cluster_range.0 = min(sv.left_pos - max_dist, cluster_range.0);
+                        cluster_range.1 = max(sv.right_pos + max_dist, cluster_range.1);
+                        cluster.push(sv);
+                    }
+                    else 
+                    {
+                        should_merge = true;
+                    }
+                }
+                else
+                {
+                    should_merge = true;
+                }
+
+                if should_merge
+                {
+                    if cluster.len() > 1 
+                    {
+                        fn update<'a, 'b>(best:&'b Variant<'a>, sv:&'b Variant<'a>) -> &'b Variant<'a>
+                        {
+                            if (best.pv_score - sv.pv_score).abs() > 0.05 { 
+                                if best.pv_score < sv.pv_score { return sv; }
+                            } else if best.boundary != sv.boundary {
+                                if !best.boundary { return sv; }
+                            } else if ((best.mean - 0.5 * best.copy_num as f64).abs() - (sv.mean - 0.5 * sv.copy_num as f64).abs()).abs() > 0.05 { 
+                                if (best.mean - 0.5 * best.copy_num as f64).abs() > (sv.mean - 0.5 * sv.copy_num as f64).abs() { return sv; }
+                            } else if (best.sd - sv.sd).abs() > 0.05 
+                            {
+                                if best.sd > sv.sd { return sv; }
+                            }
+                            return best;
+                        };
+
+                        /* Option 1: Select a best SV from the cluster */
+                        let best = cluster.iter().skip(1).fold(cluster[0], |a,b| update(a, *b));
+
+                        /* Option 2: Merge all the SV in the cluster */
+                        let event_pair = make_linear_event(cluster[0].chrom, cluster[0].left_pos, cluster[cluster.len()-1].right_pos, best.copy_num);
+                        let cluster_event = edge_detect.detect_edge(&event_pair, true);
+                        let best = cluster_event.iter().fold(best, |a, x| update(a, &x));
+
+                        result.push(best.clone());
+                    }
+                    else 
+                    {
+                        if cluster.len() > 0 { result.push(cluster[0].clone()); }
+                    }
+
+                    if let Some(sv) = next_sv
+                    {
+                        cluster.clear();
+                        cluster.push(sv);
+                        cluster_range = (sv.left_pos - max_dist, sv.right_pos + max_dist);
+                    }
+                    else
+                    {
+                        break result;
+                    }
+                }
+            }
+        };
+
+        for sv in events 
+        {
+            println!("{}\t{}\t{}\t{}", sv.chrom, sv.left_pos, sv.right_pos, sv.json_repr());
+        }
 
         return Ok(());
     }
-
-    fn dump_frontend_events<DM:DepthModel + Debug>(frontend: &Frontend<DM>, path : &str)
-    {
-        let fp = File::create(path).expect("Cannot open the frontend events");
-        for event in frontend.iter() 
-        { 
-            write!(fp, "{:?}\n", event); 
-        }
-    }
-
-    fn dump_event_pairs<'a, DM:DepthModel + Debug>(event_pair:&Vec<(Event<'a, DM>, Event<'a, DM>)>, path : &str)
-    {
-        let fp = File::create(path).expect("Cannot open the event pairs");
-        for ep in event_pair
-        {
-            write!(fp, "{}\t{}\t{}\t{}\n", ep.0.chrom, ep.0.pos, ep.1.pos, format!("ls:{:?};rs:{:?};cn:{}", ep.0.score, ep.1.score, ep.0.copy_num));
-        }
-    }
-
-    
-
-    pub fn run(&self) -> Result<(),()>
-    {
-        let scanner = if let Some(scanner_dump_prefix) = self.desc.scanner_dump_prefix 
-        {
-            let dump_path = format!("{}{}", scanner_dump_prefix, self.desc.chrom_id);
-            if !Path::new(dump_path).exists()
-            {
-                let bam = BamFile::new(self.desc.bam_path, self.desc.chrom_id, None)?;
-                let scanner = Scanner::new(&bam);
-                Self::dump_scanner(&scanner, dump_path)?;
-                scanner
-            }
-            else
-            {
-                Scanner::try_load(&mut File::open(dump_path).unwrap()).expect("Cannot load the scanner dump")
-            }
-        }
-        else
-        {
-            let bam = BamFile::new(self.desc.bam_path, self.desc.chrom_id, None)?;
-            Scanner::new(&bam)
-        };
-
-        let frontend = Frontend::<LinearModel>::new(scanner, self.window_size, &self.copy_nums[0..], None)?;
-
-        if let Some(event_dump_prefix) = self.desc.event_dump_prefix
-        {
-
-        }
-    }
 }
-
-impl TaskDesc {
-    pub fn from_arg_matches(am:&ArgMatches) -> TaskDesc 
-    {
-        let bam_path = Arc::new(am.value_of("alignment-file").unwrap().to_owned());
-
-        let copy_nums = am.value_of("copy-nums").unwrap();
-        let copy_nums:Vec<_> = copy_nums.split(",").map(|s| u32::from_str_radix(s, 10).unwrap()).collect();
-        let copy_nums = Arc::new(copy_nums);
-
-        let window_size = u32::from_str_radix(am.value_of("window-size").unwrap_or("300"), 10).unwrap();
-        let scanner_dump_prefix = if am.is_present("no-scanner-dump") { None } else {
-            let base = am.value_of("scanner-dump-path").unwrap_or(am.value_of("alignment-file").unwrap());
-            Some(Arc::new(format!("{}.limodump-", base)))
-        };
-
-        let event_dump_prefix = if am.is_present("dump-frontend-events") {
-            let path = am.value_of("dump-frontend-events").unwrap();
-            Some(Arc::new(path.to_owned()))
-        } else { None };
-
-        let paired_dump_prefix = if am.is_present("dump-event-pairs") {
-            let path = am.value_of("dump-event-pairs").unwrap();
-            Some(Arc::new(path.to_owned()))
-        } else { None };
-
-        return Self {
-            bam_path,
-            copy_nums,
-            window_size,
-            scanner_dump_prefix,
-            event_dump_prefix,
-            paired_dump_prefix
-        };
-    }
-}
-

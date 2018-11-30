@@ -18,6 +18,7 @@ features = ["yaml"]
 serde = "*"
 serde_derive = "*"
 serde_json = "*"
+threadpool = "*"
 
 [profile.dev.overrides.frontend]
 opt-level=3

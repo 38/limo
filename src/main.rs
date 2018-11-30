@@ -2,16 +2,12 @@
 extern crate serde_derive;
 
 pub mod edge;
+pub mod task;
 
-/* TODO: support more chromosome && parallelize */
-#[cfg(with_task)]
-mod task;
-
-use std::cmp::{max,min};
-use frontend::prelude::*;
-use self::edge::{EdgeDetector, Variant};
 use clap::{App, load_yaml};
 use std::str::FromStr;
+use self::task::Task;
+use threadpool::ThreadPool;
 
 
 fn main() -> Result<(), ()>
@@ -24,133 +20,28 @@ fn main() -> Result<(), ()>
 
     let window_size = u32::from_str_radix(matches.value_of("window-size").unwrap_or("300"), 10).unwrap();
     let alignment = matches.value_of("alignment-file").unwrap();
-    let chromid = 0;
 
-    let param = FrontendParam {
-        alignment,
-        scanner_dump: matches.value_of("scanner-dump-path").unwrap_or(alignment),
-        no_scanner_dump: matches.is_present("no-scanner-dump"),
-        chrom: chromid,
-        dump_fe: matches.value_of("dump-frontend-events"),
-        dump_ep: matches.value_of("dump-event-pairs"),
-        copy_nums: copy_nums.clone(),
-        window_size
-    };
+    let tp = ThreadPool::new(20);
 
-    let prob_args = match matches.value_of("prob-validate") {
-        Some("off") => None,
-        Some(value) => Some((alignment, None, 0, f64::from_str(value).unwrap())),
-        None        => Some((alignment, None, 0, 0.2))
-    };
-
-    let frontend_ctx = run_linear_frontend(param)?;
-
-    eprintln!("Collecting event pairs for chromosome #{}", chromid);
-    let event_pair = frontend_ctx.get_result();
-    
-    let mut edge_detect = EdgeDetector::new(&frontend_ctx.frontend, frontend_ctx.frontend.get_scan_size() * 2, &copy_nums[0..], prob_args);
-    
-    eprintln!("Post processing the poped events");
-
-    let report_unit = 10000000;
-    let total_mb = event_pair.last().iter().fold(0, |_, e| e.0.pos) / report_unit;
-    let mut last_mb = report_unit;
-    let mut event_count = 0;
-    let mut passed = 0;
-
-    let mut events:Vec<_> = event_pair.iter().filter_map(|ep| {
-        if ep.0.pos > last_mb {
-            eprintln!("Postprocessed: Chromosome:{}, Offset:{}MB/{}MB, FE_Events:{}, Passed:{}", ep.0.chrom, last_mb/1000000, total_mb, event_count, passed);
-            last_mb = ((ep.0.pos + report_unit - 1) / report_unit) * report_unit;
-        }
-        event_count += 1;
-        edge_detect.detect_edge(ep, true).map(|x| { passed += 1; x })
-    }).collect();
-
-    let events = {
-        eprintln!("Merging the clustered events: Chromosome: #{}", chromid);
-        events.sort_by(|a,b| a.left_pos.cmp(&b.left_pos));
-        let mut cluster_range = (0,0);
-        let mut cluster = Vec::<&Variant>::new();
-        let mut result = Vec::<Variant>::new();
-
-        let max_dist = 1000;
-
-        let mut iter = events.iter();
-        loop
-        {
-            let mut should_merge = false;
-            let next_sv = iter.next();
-            if let Some(sv) = next_sv
-            {
-                if max(sv.left_pos - max_dist, cluster_range.0) < min(sv.right_pos + max_dist, cluster_range.1) 
-                {
-                    cluster_range.0 = min(sv.left_pos - max_dist, cluster_range.0);
-                    cluster_range.1 = max(sv.right_pos + max_dist, cluster_range.1);
-                    cluster.push(sv);
-                }
-                else 
-                {
-                    should_merge = true;
-                }
-            }
-            else
-            {
-                should_merge = true;
-            }
-
-            if should_merge
-            {
-                if cluster.len() > 1 
-                {
-                    fn update<'a, 'b>(best:&'b Variant<'a>, sv:&'b Variant<'a>) -> &'b Variant<'a>
-                    {
-                        if (best.pv_score - sv.pv_score).abs() > 0.05 { 
-                            if best.pv_score < sv.pv_score { return sv; }
-                        } else if best.boundary != sv.boundary {
-                            if !best.boundary { return sv; }
-                        } else if ((best.mean - 0.5 * best.copy_num as f64).abs() - (sv.mean - 0.5 * sv.copy_num as f64).abs()).abs() > 0.05 { 
-                            if (best.mean - 0.5 * best.copy_num as f64).abs() > (sv.mean - 0.5 * sv.copy_num as f64).abs() { return sv; }
-                        } else if (best.sd - sv.sd).abs() > 0.05 
-                        {
-                            if best.sd > sv.sd { return sv; }
-                        }
-                        return best;
-                    };
-
-                    /* Option 1: Select a best SV from the cluster */
-                    let best = cluster.iter().skip(1).fold(cluster[0], |a,b| update(a, *b));
-
-                    /* Option 2: Merge all the SV in the cluster */
-                    let event_pair = make_linear_event(cluster[0].chrom, cluster[0].left_pos, cluster[cluster.len()-1].right_pos, best.copy_num);
-                    let cluster_event = edge_detect.detect_edge(&event_pair, true);
-                    let best = cluster_event.iter().fold(best, |a, x| update(a, &x));
-
-                    result.push(best.clone());
-                }
-                else 
-                {
-                    if cluster.len() > 0 { result.push(cluster[0].clone()); }
-                }
-
-                if let Some(sv) = next_sv
-                {
-                    cluster.clear();
-                    cluster.push(sv);
-                    cluster_range = (sv.left_pos - max_dist, sv.right_pos + max_dist);
-                }
-                else
-                {
-                    break result;
-                }
-            }
-        }
-    };
-
-    for sv in events 
+    for i in 0..23
     {
-        println!("{}\t{}\t{}\t{}", sv.chrom, sv.left_pos, sv.right_pos, sv.json_repr());
+        let task = Task {
+            alignment: alignment.to_string(),
+            scanner_dump: matches.value_of("scanner-dump-path").unwrap_or(alignment).to_string(),
+            no_scanner_dump: matches.is_present("no-scanner-dump"),
+            chrom: i,
+            dump_fe: matches.value_of("dump-frontend-events").map(|x| x.to_string()),
+            dump_ep: matches.value_of("dump-event-pairs").map(|x| x.to_string()),
+            copy_nums: copy_nums.clone(),
+            window_size: window_size,
+            enable_pv: (matches.value_of("prob-validate").unwrap_or("default") != "off"),
+            pv_threshold: matches.value_of("prob-validate").iter().fold(0.2, |_,val| f64::from_str(val).unwrap())
+        };
+
+        tp.execute(move || { task.run().expect("Failed"); });
     }
-    
+
+    tp.join();
+
     return Ok(()); 
 }
