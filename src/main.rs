@@ -9,7 +9,7 @@ mod task;
 
 use std::cmp::{max,min};
 use frontend::prelude::*;
-use self::edge::EdgeDetector;
+use self::edge::{EdgeDetector, Variant};
 use clap::{App, load_yaml};
 use std::str::FromStr;
 
@@ -53,24 +53,26 @@ fn main() -> Result<(), ()>
     eprintln!("Post processing the poped events");
 
     let report_unit = 10000000;
+    let total_mb = event_pair.last().iter().fold(0, |_, e| e.0.pos) / report_unit;
     let mut last_mb = report_unit;
     let mut event_count = 0;
+    let mut passed = 0;
 
     let mut events:Vec<_> = event_pair.iter().filter_map(|ep| {
         if ep.0.pos > last_mb {
-            eprintln!("Postprocessed: Chromosome:{}, Offset:{}MB, Events: {}", ep.0.chrom, last_mb/1000000, event_count);
+            eprintln!("Postprocessed: Chromosome:{}, Offset:{}MB/{}MB, FE_Events:{}, Passed:{}", ep.0.chrom, last_mb/1000000, total_mb, event_count, passed);
             last_mb = ((ep.0.pos + report_unit - 1) / report_unit) * report_unit;
         }
         event_count += 1;
-        edge_detect.detect_edge(ep, true)
+        edge_detect.detect_edge(ep, true).map(|x| { passed += 1; x })
     }).collect();
 
     let events = {
         eprintln!("Merging the clustered events: Chromosome: #{}", chromid);
         events.sort_by(|a,b| a.left_pos.cmp(&b.left_pos));
         let mut cluster_range = (0,0);
-        let mut cluster = Vec::<&crate::edge::Variant>::new();
-        let mut result = Vec::<crate::edge::Variant>::new();
+        let mut cluster = Vec::<&Variant>::new();
+        let mut result = Vec::<Variant>::new();
 
         let max_dist = 1000;
 
@@ -101,14 +103,17 @@ fn main() -> Result<(), ()>
             {
                 if cluster.len() > 1 
                 {
-                    fn update<'a, 'b>(best:&'b crate::edge::Variant<'a>, sv:&'b crate::edge::Variant<'a>) -> &'b crate::edge::Variant<'a>
+                    fn update<'a, 'b>(best:&'b Variant<'a>, sv:&'b Variant<'a>) -> &'b Variant<'a>
                     {
-                        if (best.pv_score < sv.pv_score) ||
-                           (!best.boundary && sv.boundary) ||
-                           (best.mean - 0.5 * best.copy_num as f64).abs() > (sv.mean - 0.5 * sv.copy_num as f64).abs() ||
-                           (best.sd > sv.sd)
+                        if (best.pv_score - sv.pv_score).abs() > 0.05 { 
+                            if best.pv_score < sv.pv_score { return sv; }
+                        } else if best.boundary != sv.boundary {
+                            if !best.boundary { return sv; }
+                        } else if ((best.mean - 0.5 * best.copy_num as f64).abs() - (sv.mean - 0.5 * sv.copy_num as f64).abs()).abs() > 0.05 { 
+                            if (best.mean - 0.5 * best.copy_num as f64).abs() > (sv.mean - 0.5 * sv.copy_num as f64).abs() { return sv; }
+                        } else if (best.sd - sv.sd).abs() > 0.05 
                         {
-                            return sv;
+                            if best.sd > sv.sd { return sv; }
                         }
                         return best;
                     };
@@ -121,7 +126,7 @@ fn main() -> Result<(), ()>
                     let cluster_event = edge_detect.detect_edge(&event_pair, true);
                     let best = cluster_event.iter().fold(best, |a, x| update(a, &x));
 
-                    result.push(crate::edge::Variant::clone(best));
+                    result.push(best.clone());
                 }
                 else 
                 {
