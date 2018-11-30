@@ -41,7 +41,7 @@ pub mod prelude {
         use std::io::Write;
         for event in frontend.iter() 
         { 
-            write!(fp, "{:?}\n", event); 
+            write!(fp, "{:?}\n", event).expect("IO error"); 
         }
     }
 
@@ -51,7 +51,7 @@ pub mod prelude {
 
         for ep in event_pair
         {
-            write!(fp, "{}\t{}\t{}\t{}\n", ep.0.chrom, ep.0.pos, ep.1.pos, format!("ls:{:?};rs:{:?};cn:{}", ep.0.score, ep.1.score, ep.0.copy_num));
+            write!(fp, "{}\t{}\t{}\t{}\n", ep.0.chrom, ep.0.pos, ep.1.pos, format!("ls:{:?};rs:{:?};cn:{}", ep.0.score, ep.1.score, ep.0.copy_num)).expect("IO error");
         }
     }
 
