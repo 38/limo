@@ -1,3 +1,4 @@
+use serde_derive::Serialize;
 use std::marker::PhantomData;
 use frontend::depth_model::DepthModel;
 use frontend::frontend::{Frontend, Event, Side};
