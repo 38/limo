@@ -20,10 +20,6 @@ fn create_hts_bindings(base:&str) -> Result<(), ()>
             .write_to_file("generated/htslib.rs")
             .expect("Unable to write the generated file");
     }
-    if !Path::new(&format!("{}/htslib/libhts-static.a", base)).exists() {
-        std::os::unix::fs::symlink(format!("{}/htslib/libhts.a", base), format!("{}/htslib/libhts-static.a", base))
-        .expect("Unable to create the symlink to libhts.a");
-    }
     Ok(())
 }
 fn main() -> Result<(), std::io::Error>
@@ -40,7 +36,7 @@ fn main() -> Result<(), std::io::Error>
             .expect("Unable to call makefile for htslib");
     }
     println!("cargo:rustc-link-search={}/htslib/", base);
-    println!("cargo:rustc-link-lib=hts-static");
+    println!("cargo:rustc-link-lib=hts");
     println!("cargo:rustc-link-lib=z");
     println!("cargo:rustc-link-lib=m");
     println!("cargo:rustc-link-lib=bz2");
