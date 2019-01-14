@@ -46,10 +46,22 @@ args:
         takes_value: true
         index: 1
         help: The input BAM/CRAM file
-    - chromosomes:
+    - include:
         takes_value: true
-        index: 2
-        help: The chromosome to scan 
+        long: 'include'
+        short: 'i'
+        help: The regex matches the chromosome to scan 
+    - exclude:
+        takes_value: true
+        long: 'exclude'
+        short: 'e'
+        help: The regex matches the chromosome not to scan
+    - threads:
+        takes_value: true
+        long: 'threads'
+        short: 'T'
+        value_name: NUM_THREADS
+        help: Specify the number of threads Limo can use
     - prob-validate:
         takes_value: true
         short: 'p'

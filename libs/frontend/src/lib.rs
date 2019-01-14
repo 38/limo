@@ -103,8 +103,8 @@ pub mod prelude {
     
         let ret = Context{ 
             frontend: Frontend::<LinearModel>::new(scanner, param.window_size, &param.copy_nums[0..], None)?,
-            fe_path: if let Some(fe) = param.dump_fe { Some(String::from(fe)) } else {None},
-            ep_path: if let Some(ep) = param.dump_ep { Some(String::from(ep)) } else {None}
+            fe_path: if let Some(fe) = param.dump_fe { Some(format!("{}-{}", fe, param.chrom)) } else {None},
+            ep_path: if let Some(ep) = param.dump_ep { Some(format!("{}-{}", ep, param.chrom)) } else {None}
         };
 
         return Ok(ret);
