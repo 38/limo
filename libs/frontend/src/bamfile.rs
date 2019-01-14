@@ -1,7 +1,8 @@
 use super::hts::*; 
-use std::ffi::{CString, c_void};
+use std::ffi::{CString, c_void, CStr};
 use std::ptr::{null_mut, null};
 use std::ops::Index;
+use std::slice::from_raw_parts;
 
 #[allow(dead_code)]
 pub struct Alignment<'a> {
@@ -290,6 +291,32 @@ impl Drop for  BamFile {
 }
 
 impl BamFile {
+    pub fn list_chromosomes(path:&str) -> Result<Vec<String>, ()> {
+        let fp = unsafe {
+            hts_open(CString::new(path).unwrap().as_ptr(), 
+                     CString::new("rb").unwrap().as_ptr()) 
+        };
+
+        if fp == null_mut() 
+        {
+            eprintln!("Cannot open the alignment file");
+            return Err(());
+        }
+
+        let hdr = unsafe { sam_hdr_read(fp) };
+
+        let raw_names = unsafe{ from_raw_parts((*hdr).target_name, (*hdr).n_targets as usize) };
+
+        let mut ret = Vec::new();
+
+        for raw_name in raw_names {
+            let raw_name = unsafe{ CStr::from_ptr(*raw_name as *const i8) };
+
+            ret.push(raw_name.to_string_lossy().to_string());
+        }
+
+        return Ok(ret);
+    }
     pub fn new<'c,'b>(path:&'c str, chrom:u32, reference:Option<&'b str>) -> Result<Self, ()>
     {
         let fp = unsafe {
@@ -299,6 +326,7 @@ impl BamFile {
 
         if fp == null_mut() 
         {
+            eprintln!("Cannot open the alignment file");
             return Err(());
         }
 
@@ -306,6 +334,7 @@ impl BamFile {
         {
             if unsafe{ hts_set_fai_filename(fp, CString::new(reference.unwrap()).unwrap().as_ptr()) } < 0
             {
+                eprintln!("Cannot find the reference file.");
                 return Err(());
             }
         }
@@ -314,6 +343,7 @@ impl BamFile {
 
         if hdr == null_mut()
         {
+            eprintln!("Cannot read the header from the alignment file");
             return Err(());
         }
 
@@ -321,6 +351,7 @@ impl BamFile {
 
         if idx == null_mut()
         {
+            eprintln!("Cannot load the index file, please generate the index file");
             return Err(());
         }
 
@@ -336,13 +367,10 @@ impl BamFile {
         });
     }
 
-    #[allow(dead_code)]
     pub fn size(&self) -> usize { self.length }
 
-    #[allow(dead_code)]
     pub fn try_iter(&self) -> Result<BamFileIter, ()> { self.try_iter_range(0, self.length) }
 
-    #[allow(dead_code)]
     pub fn try_iter_range(&self, begin:usize, end:usize) -> Result<BamFileIter, () >
     {
         let left = begin;

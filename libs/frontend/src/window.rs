@@ -65,8 +65,11 @@ impl <T> Window<T> where
         }
     }
 
-    pub fn accumulate(&mut self, beg:usize, end:usize, weight:T) 
+    pub fn accumulate(&mut self, beg:usize, mut end:usize, weight:T) 
     {
+        if end > self.acc.len() - 1 { 
+            end = self.acc.len() - 1;
+        }
         self.acc[beg] = T::clone(&self.acc[beg]) + T::clone(&weight);
         self.acc[end] = T::clone(&self.acc[end]) - T::clone(&weight);
 

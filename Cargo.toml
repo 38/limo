@@ -19,6 +19,7 @@ serde = "*"
 serde_derive = "*"
 serde_json = "*"
 threadpool = "*"
+regex = "*"
 
 [profile.dev.overrides.frontend]
 opt-level=3
