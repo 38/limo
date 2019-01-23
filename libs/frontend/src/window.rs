@@ -67,9 +67,7 @@ impl <T> Window<T> where
 
     pub fn accumulate(&mut self, beg:usize, mut end:usize, weight:T) 
     {
-        if end > self.acc.len() - 1 { 
-            end = self.acc.len() - 1;
-        }
+        end = (self.acc.len() - 1).min(end);
         self.acc[beg] = T::clone(&self.acc[beg]) + T::clone(&weight);
         self.acc[end] = T::clone(&self.acc[end]) - T::clone(&weight);
 
@@ -81,7 +79,7 @@ impl <T> Window<T> where
     }
 
     pub fn iter<'a, R>(&'a self, win_size : usize) -> WindowIter<'a, T, R> where
-        R : Default + Clone + Add<Output = R> + Sub<Output = R> + From<T>
+        R : Default + Clone + Add<Output = R> + Sub<Output = R> + From<T> + PartialOrd
     {
         WindowIter::new(self, win_size)
     }
@@ -107,7 +105,7 @@ impl <'a, T, R : From<T>> WindowIter<'a, T, R> where
     T : Sized + Default + Clone,
     T : Add<Output = T>,
     T : Sub<Output = T>,
-    R : Default + Clone + Add<Output = R> + Sub<Output = R>
+    R : Default + Clone + Add<Output = R> + Sub<Output = R> + PartialOrd
 {
     pub fn new(win : &'a Window<T>, size: usize) -> Self 
     {
@@ -132,8 +130,9 @@ impl <'a, T, R : From<T>> WindowIter<'a, T, R> where
 
         if self.win_size == 1 
         {
-            self.i += 1;
             self.result = R::clone(&self.result) + R::from(T::clone(&self.win_obj.acc[self.i]));
+            self.i += 1;
+            assert!(self.result >= R::default());
             return Some(R::clone(&self.result));
         }
 
@@ -167,6 +166,7 @@ impl <'a, T, R : From<T>> WindowIter<'a, T, R> where
 
             if should_return 
             {
+                assert!(ret >= R::default());
                 return Some(ret);
             }
         }
@@ -179,7 +179,7 @@ impl <'a, T, R : From<T>> Iterator for WindowIter<'a, T, R> where
     T : Sized + Default + Clone,
     T : Add<Output = T>,
     T : Sub<Output = T>,
-    R : Default + Clone + Add<Output = R> + Sub<Output = R>
+    R : Default + Clone + Add<Output = R> + Sub<Output = R> + PartialOrd
 {
     type Item = R;
     fn next(&mut self) -> Option<Self::Item>

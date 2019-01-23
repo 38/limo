@@ -58,10 +58,8 @@ impl <DM:DepthModel + Sized> Frontend<DM> {
         return Ok(ret);
     }
 
-    #[allow(dead_code)]
     pub fn get_scan_size(&self) -> u32 { self.window_size + self.scanner.get_common_read_length() }
 
-    #[allow(dead_code)]
     pub fn get_window_size(&self) -> u32 { self.window_size }
 
     pub fn get_copy_nums(&self) -> &[u32] 
@@ -69,9 +67,8 @@ impl <DM:DepthModel + Sized> Frontend<DM> {
         return &self.copy_nums[0..];
     }
 
-    #[allow(dead_code)]
     pub fn get_scanner(&self) -> &Scanner { &self.scanner }
-    #[allow(dead_code)]
+    
     pub fn get_scanner_mut(&mut self) -> &mut Scanner { &mut self.scanner }
 
     pub fn iter<'a>(&'a self) -> FrontendIter<'a, DM> 
@@ -165,6 +162,10 @@ impl <'a, DM : DepthModel + Sized> Iterator for FrontendIter<'a, DM>
 
             self.feed(dep);
             self.pos += 1;
+
+            /*if self.pos == 3329_5700 {
+                unsafe{ std::intrinsics::breakpoint(); }
+            }*/
 
             let mut best_score = Default::default(); 
             let mut best_side: Option<Side> = None;

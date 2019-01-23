@@ -28,7 +28,7 @@ fn main() -> Result<(), ()>
 
     let tp = ThreadPool::new(nthreads);
 
-    let include_pattern = Regex::new(matches.value_of("include").unwrap_or(r"^([Cc]hr)?[0-9XYxy]$")).unwrap();
+    let include_pattern = Regex::new(matches.value_of("include").unwrap_or(r"^([Cc]hr)?[0-9XYxy]*$")).unwrap();
     let exclude_pattern = Regex::new(matches.value_of("exclude").unwrap_or(".^")).unwrap();
 
     let target_list:Vec<_> = BamFile::list_chromosomes(alignment)?.into_iter().enumerate()

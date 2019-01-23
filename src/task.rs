@@ -55,6 +55,11 @@ impl Task {
                 last_mb = ((ep.0.pos + report_unit - 1) / report_unit) * report_unit;
             }
             event_count += 1;
+
+            /*if ep.0.pos > 52870500 {
+                eprintln!("haha");
+            }*/
+
             edge_detect.detect_edge(ep, true).map(|x| { passed += 1; x })
         }).collect();
 

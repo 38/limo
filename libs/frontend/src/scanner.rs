@@ -152,10 +152,10 @@ impl Scanner {
 
            if read.get_mqual() == 0 
            {
-               ret.low_mq_window.accumulate(begin as usize, end as usize, 1);
+               ret.low_mq_window.accumulate(begin, end, 1);
            }
 
-           ret.corrected_window.accumulate(begin as usize, end as usize, 1);
+           ret.corrected_window.accumulate(begin, end, 1);
         }
 
         return Ok(ret);

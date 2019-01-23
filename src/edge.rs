@@ -124,8 +124,9 @@ impl <'a, DM:DepthModel> EdgeDetector<'a, DM> {
         let mut lmq_avg = 0f64;
         for pos in left..right
         {
-            norm1 += self.histogram.normalize(self.raw_dep[pos as usize] as u32);
-            norm2 += (|x| x*x)(self.histogram.normalize(self.raw_dep[pos as usize] as u32));
+            let val = self.histogram.normalize(self.raw_dep[pos as usize] as u32);
+            norm1 += val;
+            norm2 += val * val;
             lmq_avg += self.histogram.normalize(self.lmq_dep[pos as usize] as u32);
         }
 
@@ -284,7 +285,7 @@ impl <'a, DM:DepthModel> EdgeDetector<'a, DM> {
                         mean: best_avg,
                         sd,
                         pv_score: 1.0,
-                        boundary: true
+                        boundary: true,
                     });
 
                     break 'outer;
@@ -317,7 +318,7 @@ impl <'a, DM:DepthModel> EdgeDetector<'a, DM> {
                         mean: avg,
                         sd,
                         pv_score: 1.0,
-                        boundary: false
+                        boundary: false,
                     });
                 }
             }

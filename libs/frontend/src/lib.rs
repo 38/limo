@@ -1,3 +1,5 @@
+#![feature(core_intrinsics)]
+
 pub mod hts;
 pub mod window;
 pub mod bamfile;
