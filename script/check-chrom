@@ -1,0 +1,19 @@
+#!/bin/zsh
+function filter_callset() {
+	local FILE=$(mktemp)
+	awk -F'\t' 'BEGIN{OFS="\t"} $1=="'$2'"{print $0}' $1 > ${FILE}
+	echo ${FILE}
+}
+
+A=$(filter_callset $1 $3)
+B=$(filter_callset $2 $3)
+
+MATCHES=$(bedtools intersect -a ${A}  \
+	     -b ${B} \
+		 -F .3 -f .3 | wc -l | awk '{print $1}')
+A_SIZE=$(wc -l ${A} | awk '{print $1}')
+B_SIZE=$(wc -l ${B} | awk '{print $1}')
+
+echo $3"\t"${MATCHES}"\t"${A_SIZE}"\t"${B_SIZE}"\t"$((${MATCHES}.0/${B_SIZE}.001))
+
+rm -f ${A} ${B} 

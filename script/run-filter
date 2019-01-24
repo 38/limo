@@ -1,0 +1,19 @@
+#!/bin/zsh
+set -x
+rm -rf $1
+mkdir -p $1
+BASE=$(dirname $0)
+S_CMD="${BASE}/size-filter raw.bed 280 > $1/s.bed"
+P_CMD="${BASE}/pv-filter $1/s.bed 0.45 0.55> $1/sp.bed"
+B_CMD="${BASE}/boarder-filter $1/sp.bed .75 > $1/spb.bed"
+
+eval ${S_CMD}
+eval ${P_CMD}
+eval ${B_CMD}
+
+ln -s $(readlink -f ${BASE}/../data/HG002/cnv.full.bed) $1/cnv.bed
+ln -s $(pwd)/raw.bed $1/raw.bed
+
+echo ${S_CMD} > $1/s.cmd
+echo ${P_CMD} > $1/p.cmd
+echo ${B_CMD} > $1/b.cmd

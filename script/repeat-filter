@@ -1,0 +1,2 @@
+#!/bin/zsh
+bedtools subtract -A -a $1 -b /uufs/chpc.utah.edu/common/home/u0875014/limo-development/fasta/repeat-region.bed

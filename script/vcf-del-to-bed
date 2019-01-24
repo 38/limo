@@ -1,0 +1,18 @@
+#!/bin/zsh
+
+bcftools view -i 'SVTYPE="DEL"' ${1} |\
+	grep -v '^#' |\
+	awk -F'\t' '
+BEGIN {
+	OFS = "\t"
+}
+{
+	split($8, buf, ";");
+	for(i in buf){
+		split(buf[i], field_buf, "=");
+		parsed[field_buf[1]] = field_buf[2];
+	}
+	parsed["POS"] = $2
+	parsed["CHROM"] = $1
+	print parsed["CHROM"],parsed["POS"] - 1, parsed["POS"] -  parsed["SVLEN"]
+}'

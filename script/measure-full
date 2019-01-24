@@ -1,0 +1,13 @@
+#!/bin/zsh
+BASE=$(dirname ${0})
+for ((i=1;i<=23;i++)); do 
+	if [ $i = 23 ]
+	then
+		name="X"
+	else
+		name=${i}
+	fi
+	${BASE}/check-chrom $1  ${BASE}/../data/HG002/whole-genome/filtered_del.bed ${name}
+done |\
+	awk 'BEGIN{OFS="\t"}{m_sum += $2; a_sum += $3; b_sum += $4; print $0} END{ print "Total",m_sum,a_sum,b_sum,m_sum/b_sum }'
+

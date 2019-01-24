@@ -1,0 +1,13 @@
+#!/uufs/chpc.utah.edu/common/home/u0875014/.linuxbrew/Cellar/python/3.6.5_1/bin/python3.6
+import json
+import sys
+if len(sys.argv) >= 3:
+	threshold = float(sys.argv[2])
+else:
+	threshold = 0.80
+for line in open(sys.argv[1]):
+	raw_line = line.strip()
+	line = raw_line.split()
+	parsed = json.loads(line[3])
+	if parsed["boundary"] or parsed["pv_score"] > threshold or parsed["right_pos"] - parsed["left_pos"] > 5000:
+		print(raw_line)

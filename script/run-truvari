@@ -1,0 +1,32 @@
+#!/usr/bin/zsh
+set -x
+BASE=$(dirname $0)
+SUFFIX=$(basename $0 | awk -F. 'NF > 1 {print "."$NF}')
+
+rm -rf $2
+prefix=$(mktemp /tmp/XXXXXXXXX)
+if [ "${SUFFIX}" = "" ]
+then
+	${BASE}/to-vcf $1 > ${prefix}.vcf
+fi
+if [ "${SUFFIX}" = ".hemi" ]
+then
+	${BASE}/to-vcf $1 > ${prefix}${SUFFIX}.vcf
+fi
+if [ "${SUFFIX}" = ".homo" ]
+then
+	${BASE}/to-vcf $1 > ${prefix}${SUFFIX}.vcf
+fi
+bgzip ${prefix}${SUFFIX}.vcf
+tabix ${prefix}${SUFFIX}.vcf.gz
+
+target_dir=$2
+
+shift
+shift
+
+BASELINE=${BASE}/../data/HG002/whole-genome/filtered_del${SUFFIX}.vcf.gz
+
+${BASE}/../truvari/truvari.py -b ${BASELINE}  -c ${prefix}${SUFFIX}.vcf.gz -o ${target_dir} -f /uufs/chpc.utah.edu/common/home/u6000771/bcbio/genomes/Hsapiens/g1k_v37_decoy/seq/g1k_v37_decoy.fa $@
+
+rm -f ${prefix}${SUFFIX}.vcf.gz ${prefix}${SUFFIX}.vcf.gz ${prefix}${SUFFIX}.vcf.gz.tbi ${prefix}

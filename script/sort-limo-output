@@ -1,0 +1,3 @@
+#!/bin/zsh
+
+~/.linuxbrew/bin/bedtools sort -i ${1} 

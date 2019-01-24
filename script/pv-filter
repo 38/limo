@@ -1,0 +1,28 @@
+#!/uufs/chpc.utah.edu/common/home/u0875014/.linuxbrew/Cellar/python/3.6.5_1/bin/python3.6
+import json
+import sys
+
+if len(sys.argv) >= 3:
+	hemi_threshold = float(sys.argv[2])
+else:
+	hemi_threshold = 0.35
+
+if len(sys.argv) >= 4:
+	homo_threshold = float(sys.argv[3])
+else:
+	homo_threshold = hemi_threshold
+
+def pv_filter(parsed, hemi_threshold, homo_threshold):
+	return (parsed["copy_num"] == 1 and parsed["pv_score"] > hemi_threshold) or (parsed["copy_num"] == 0 and parsed["pv_score"] > homo_threshold)
+
+def pv_filter_size(parsed):
+	if parsed["right_pos"] - parsed["left_pos"] > 5000:
+		return pv_filter(parsed, hemi_threshold, homo_threshold)
+	return pv_filter(parsed, hemi_threshold, homo_threshold)
+
+for line in open(sys.argv[1]):
+	raw_line = line.strip()
+	line = raw_line.split()
+	parsed = json.loads(line[3])
+	if pv_filter_size(parsed):
+		print(raw_line)
