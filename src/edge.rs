@@ -1,5 +1,6 @@
-use serde_derive::Serialize;
+use serde_derive::{Serialize, Deserialize};
 use std::marker::PhantomData;
+use std::io::{Read, BufReader, BufRead};
 use frontend::depth_model::DepthModel;
 use frontend::frontend::{Frontend, Event, Side};
 use frontend::histogram::Histogram;
@@ -20,7 +21,7 @@ pub struct EdgeDetector<'a, DM:DepthModel + 'a> {
     phantom: PhantomData<&'a DM>
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Variant<'a> {
     pub chrom: &'a str,   
     pub left_pos: u32,
@@ -257,7 +258,10 @@ impl <'a, DM:DepthModel + 'a> EdgeDetector<'a, DM> {
                     Err(idx) => idx, 
                     Ok(idx) => idx 
                 }) as f64 / (normal_depth_value.len() as f64));
-                return Ok(score.fold(4.0, |s, x| s * (x - 0.5)));
+
+                return Ok(score.fold(4.0, |s, x| {
+                    s * (x - 0.5)
+                }));
             }
             else 
             {
@@ -415,5 +419,35 @@ impl <'a, DM:DepthModel + 'a> EdgeDetector<'a, DM> {
         return result;
 
 
+    }
+
+    pub fn load_variants<T:Read>(&self, data:T) -> Vec<Variant<'a> > {
+        let mut ret = Vec::new();
+
+        let reader = BufReader::new(data);
+
+        for line in reader.lines() {
+            let line = line.expect("Unable read");
+
+            if let Some(data) = line.split('\t').collect::<Vec<_>>().get(3) {
+                if let Ok(data) = serde_json::from_str::<Variant>(data) {
+                    if data.chrom != self.chrom {
+                        continue;
+                    }
+                    ret.push(Variant {
+                        chrom: self.chrom,
+                        left_pos: data.left_pos,
+                        right_pos: data.right_pos,
+                        copy_num: data.copy_num,
+                        mean: data.mean,
+                        sd: data.sd,
+                        pv_score: data.pv_score,
+                        boundary: data.boundary,
+                    });
+                }
+            }
+        }
+
+        return ret;
     }
 }

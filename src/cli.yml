@@ -16,6 +16,10 @@ args:
         short: n
         long: no-scanner-dump
         help: Do not use the scanner dump / Do not produce scanner dump
+    - no-cluster-merge:
+        short: N
+        long: no-cluster-merge
+        help: Do not merge the clustered events
     - scanner-dump-path:
         short: S
         long: scanner-dump-path
@@ -68,3 +72,8 @@ args:
         long: 'prob-validate'
         value_name: THRESHOLD|off
         help: Specify the treshold for the probability validation
+    - load-events:
+        takes_value: true
+        long: 'load-events'
+        value_name: 'BEDFILE'
+        help: Load an bedfile contains Limo output and do the merge step only

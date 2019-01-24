@@ -12,7 +12,9 @@ pub struct Task {
     pub copy_nums: Vec<u32>,
     pub window_size: u32,
     pub enable_pv: bool,
-    pub pv_threshold: f64
+    pub pv_threshold: f64,
+    pub cluster_merge: bool,
+    pub load_events: Option<String>,
 }
 
 impl Task {
@@ -37,34 +39,36 @@ impl Task {
 
         let frontend_ctx = run_linear_frontend(frontend_param.clone())?;
 
-        eprintln!("Collecting event pairs for chromosome #{}", frontend_param.chrom);
-        let event_pair = frontend_ctx.get_result();
-        
+        eprintln!("Constructing event detection context for chrom {}", frontend_param.chrom);
+
         let mut edge_detect = EdgeDetector::new(&frontend_ctx.frontend, frontend_ctx.frontend.get_scan_size() * 2, &frontend_param.copy_nums[0..], prob_args);
         
-        eprintln!("Post processing the poped events: Chromosome: {}", frontend_param.chrom);
+        let mut events:Vec<_> = if self.load_events.is_none() {
 
-        let report_unit = 10000000;
-        let total_mb = event_pair.last().iter().fold(0, |_, e| e.0.pos) / 1000000;
-        let mut last_mb = report_unit;
-        let mut event_count = 0;
-        let mut passed = 0;
+            eprintln!("Collecting event pairs for chromosome #{}", frontend_param.chrom);
+            let event_pair = frontend_ctx.get_result();
+            
+            eprintln!("Post processing the poped events: Chromosome: {}", frontend_param.chrom);
+            let report_unit = 10000000;
+            let total_mb = event_pair.last().iter().fold(0, |_, e| e.0.pos) / 1000000;
+            let mut last_mb = report_unit;
+            let mut event_count = 0;
+            let mut passed = 0;
 
-        let mut events:Vec<_> = event_pair.iter().filter_map(|ep| {
-            if ep.0.pos > last_mb {
-                eprintln!("Postprocessed: Chromosome:{}, Offset:{}MB/{}MB, FE_Events:{}, Passed:{}", ep.0.chrom, last_mb/1000000, total_mb, event_count, passed);
-                last_mb = ((ep.0.pos + report_unit - 1) / report_unit) * report_unit;
-            }
-            event_count += 1;
+            event_pair.iter().filter_map(|ep| {
+                if ep.0.pos > last_mb {
+                    eprintln!("Postprocessed: Chromosome:{}, Offset:{}MB/{}MB, FE_Events:{}, Passed:{}", ep.0.chrom, last_mb/1000000, total_mb, event_count, passed);
+                    last_mb = ((ep.0.pos + report_unit - 1) / report_unit) * report_unit;
+                }
+                event_count += 1;
 
-            /*if ep.0.pos > 32532900 && ep.0.pos < 32533000 {
-                unsafe{ std::intrinsics::breakpoint(); }
-            }*/
+                edge_detect.detect_edge(ep, true).map(|x| { passed += 1; x })
+            }).collect()
+        } else {
+            edge_detect.load_variants(std::fs::File::open(self.load_events.as_ref().unwrap()).expect("Cannot open event file"))
+        };
 
-            edge_detect.detect_edge(ep, true).map(|x| { passed += 1; x })
-        }).collect();
-
-        let events = {
+        let events = if self.cluster_merge {
             eprintln!("Merging the clustered events: Chromosome: #{}", frontend_param.chrom);
             events.sort_by(|a,b| a.left_pos.cmp(&b.left_pos));
             let mut cluster_range = (0,0);
@@ -153,6 +157,8 @@ impl Task {
                     }
                 }
             }
+        } else {
+            events
         };
 
         for sv in events 

@@ -50,7 +50,9 @@ fn main() -> Result<(), ()>
             copy_nums: copy_nums.clone(),
             window_size: window_size,
             enable_pv: matches.value_of("prob-validate").map_or(true, |val| val != "off"),
-            pv_threshold: matches.value_of("prob-validate").map_or(0.2, |val| f64::from_str(val).unwrap())
+            pv_threshold: matches.value_of("prob-validate").map_or(0.2, |val| f64::from_str(val).unwrap()),
+            cluster_merge: !matches.is_present("no-cluster-merge"),
+            load_events: matches.value_of("load-events").map(|x| x.to_string()),
         };
 
         if let Some(ref tp) = tp {
