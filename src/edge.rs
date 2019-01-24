@@ -30,6 +30,7 @@ pub struct Variant<'a> {
     pub mean     : f64,
     pub sd       : f64,
     pub pv_score : f64,
+    pub lmq_mean : f64,
     pub boundary : bool
 }
 
@@ -341,7 +342,7 @@ impl <'a, DM:DepthModel + 'a> EdgeDetector<'a, DM> {
                    ((avg - ret.as_ref().unwrap().mean).abs() < 1e-5 && 
                     (sd < ret.as_ref().unwrap().sd))
                 {
-                    let mut best_avg = avg - lmq_avg;
+                    let mut best_avg = avg;
 
                     if (avg - 0.5 * (copy_num as f64)).abs() < (best_avg - 0.5 * (copy_num as f64)).abs()
                     {
@@ -356,6 +357,7 @@ impl <'a, DM:DepthModel + 'a> EdgeDetector<'a, DM> {
                         sd,
                         pv_score: 1.0,
                         boundary: true,
+                        lmq_mean: lmq_avg,
                     });
 
                     break 'outer;
@@ -375,7 +377,7 @@ impl <'a, DM:DepthModel + 'a> EdgeDetector<'a, DM> {
             if (right - left) * 2 > event.1.pos - event.0.pos && right - left > 200
             {
 
-                let (avg,sd, _lmq) = self.compute_norms(left, right);
+                let (avg,sd, lmq) = self.compute_norms(left, right);
 
                 if sd < 0.2
                 {
@@ -388,6 +390,7 @@ impl <'a, DM:DepthModel + 'a> EdgeDetector<'a, DM> {
                         sd,
                         pv_score: 1.0,
                         boundary: false,
+                        lmq_mean: lmq,
                     });
                 }
             }
@@ -443,6 +446,7 @@ impl <'a, DM:DepthModel + 'a> EdgeDetector<'a, DM> {
                         sd: data.sd,
                         pv_score: data.pv_score,
                         boundary: data.boundary,
+                        lmq_mean: data.lmq_mean,
                     });
                 }
             }

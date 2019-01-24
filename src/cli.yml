@@ -1,4 +1,6 @@
 name: Limo - The LInear MOdel CNV Detection   
+version: 0.0.1
+author: Hao Hou <haohou302@gmail.com>
 args:
     - dump-model-events:
         short: M
