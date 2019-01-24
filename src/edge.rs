@@ -7,7 +7,7 @@ use frontend::bamfile::BamFile;
 use frontend::window::Window;
 use std::cmp::Ord;
 
-pub struct EdgeDetector<'a, DM:DepthModel> {
+pub struct EdgeDetector<'a, DM:DepthModel + 'a> {
     chrom: &'a str,
     scan_size: u32,
     read_size: u32,
@@ -39,7 +39,7 @@ impl <'a> Variant<'a> {
     }
 }
 
-impl <'a, DM:DepthModel> EdgeDetector<'a, DM> {
+impl <'a, DM:DepthModel + 'a> EdgeDetector<'a, DM> {
     #[allow(dead_code)]
     pub fn new(frontend:&'a Frontend<DM>, scan_size: u32, copy_nums: &[u32], alignment: Option<(&str, Option<&str>, u32, f64)>) -> Self 
     {
@@ -69,34 +69,41 @@ impl <'a, DM:DepthModel> EdgeDetector<'a, DM> {
         return ret;
     }
 
-    fn compute_normalized_change_rate(&self, pos:u32, event: &Event<'a, DM>) -> i32
+    fn compute_normalized_change_rate<S,T>(data:&[S], pos:u32, event: &Event<'a, DM>) -> T
+        where
+            S: std::ops::Sub<S,Output = T> + Clone,
+            T: std::ops::Neg<Output = T> + std::default::Default 
     {
-        let raw_rate = self.raw_dep[pos as usize] - self.raw_dep[(pos - 1) as usize];
+        let raw_rate = data[pos as usize].clone() - data[(pos - 1) as usize].clone();
 
         return match (event.copy_num, event.side) {
             (copy_num, Side::Left) if copy_num < 2 => -raw_rate,
             (copy_num, Side::Left) if copy_num > 2 => raw_rate,
             (copy_num, Side::Right) if copy_num < 2 => raw_rate,
             (copy_num, Side::Right) if copy_num > 2 => -raw_rate,
-            _ => 0 
+            _ => std::default::Default::default()
         };
     }
 
-    fn scan_edge(&self, event: &Event<'a, DM>) -> Vec<(u32, i32)>
+    fn scan_edge_in_range<S,T>(data:&[S], event: &Event<'a, DM>, left:u32, right:u32, limit:usize) -> Vec<(u32,T)> 
+        where
+            S: std::ops::Sub<S,Output = T> + Clone,
+            T: std::ops::Neg<Output = T> + std::default::Default + Copy + PartialOrd
     {
-        let (left, mut right) = (if event.pos < self.scan_size { 0 } else { event.pos - self.scan_size }, event.pos + self.scan_size);
-        if right as usize > self.raw_dep.len() 
+
+        let (left, mut right) = (if event.pos < left { 0 } else { event.pos - left }, event.pos + right);
+        if right as usize > data.len()
         {
-            right = self.raw_dep.len() as u32;
+            right = data.len() as u32;
         }
 
         let mut ret = Vec::new();
 
-        let mut last_scores = [0i32;3];
+        let mut last_scores = [T::default();3];
 
         for i in left..right 
         {
-            last_scores[(i%3) as usize] = self.compute_normalized_change_rate(i, event);
+            last_scores[(i%3) as usize] = Self::compute_normalized_change_rate(data, i, event);
 
             if i >= left + 3
             {
@@ -111,9 +118,32 @@ impl <'a, DM:DepthModel> EdgeDetector<'a, DM> {
             }
         }
 
-        ret.sort_unstable_by(|a,b| b.1.cmp(&a.1));
+        ret.sort_unstable_by(|a,b| b.1.partial_cmp(&a.1).unwrap());
 
-        return ret.iter().take(5).map(|a| *a).collect();
+        return ret.iter().take(limit).map(|a| *a).collect();
+    }
+
+    fn scan_edge(&self, event: &Event<'a, DM>) -> Vec<(u32, i32)>
+    {
+        return Self::scan_edge_in_range(&self.raw_dep[..], event, self.scan_size, self.scan_size, 5);
+    }
+
+    pub fn extend_region(&mut self,  (left, right): &(Event<'a, DM>, Event<'a, DM>), limit:u32) -> Option<Variant<'a>> {
+        let left_edge = Self::scan_edge_in_range(&self.raw_dep[..], left, limit, limit, 1);
+        let right_edge = Self::scan_edge_in_range(&self.raw_dep[..], right, limit, limit, 1);
+    
+        if left_edge.len() > 0 && right_edge.len() > 0 {
+
+            let mut left = left.clone();
+            let mut right = right.clone();
+
+            left.pos = left_edge[0].0;
+            right.pos = right_edge[0].0;
+
+            return self.detect_edge(&(left, right), true);
+        }
+
+        return None;
     }
 
     fn compute_norms(&mut self, left:u32, right:u32) -> (f64, f64, f64)
@@ -136,38 +166,15 @@ impl <'a, DM:DepthModel> EdgeDetector<'a, DM> {
         return (norm1, norm2 - norm1 * norm1, lmq_avg / len);
     }
 
-    /* This is the valildation based on the Read-Depth-Fragment-Depth correction
-     * It based on measuring how strange the event is compared to the nearby region
-     * Since the depth correction can cancel out most of the systematic bais, the average
-     * of the depth is assumed to be stable.
-     *
-     * Problem: This needs to revisit the bamfile and slow down the program 
-     */
-    fn pvalue_validation(&mut self, variant: &Variant) -> Result<f64,()>
-    {
-        if let Some(ref mut bamfile) = self.bamfile 
-        {
-            let mut length = (variant.right_pos - variant.left_pos) * 100;
+    fn compute_fr_correction<F:FnMut(u32, f64)>(&mut self, left: u32, right:u32, mut update:F) -> Result<bool,()> {
+        if let Some(ref mut bamfile) = self.bamfile {
+            let range = (left as usize, right as usize);
             
-            if length < 10000 
-            {
-                length = 10000;
-            }
-
-            if length > 100000 
-            {
-                length = 100000;
-            }
-
-            if length > variant.left_pos { length = variant.left_pos; } 
-
-            let range = ((variant.left_pos - length) as usize, (variant.right_pos + length) as usize);
-
             let iter = bamfile.try_iter_range(range.0, range.1)?;
 
             let mut window = Window::<i32>::new(range.1 - range.0);
             let mut window_r = Window::<i32>::new(range.1 - range.0);
-
+            
             for read in iter 
             {
                 if read.mqual() == 0 { continue; }
@@ -190,30 +197,50 @@ impl <'a, DM:DepthModel> EdgeDetector<'a, DM> {
 
                 window_r.accumulate((read.ref_begin() - range.0 as u32) as usize, (read.ref_end() - range.0 as u32) as usize, 1);
             }
-
-            let mut normal_depth_value = Vec::new();
-            let mut event_depth_value = Vec::new();
-
+            
             let mut pos = range.0 as u32;
     
-            for (p,r) in window.iter::<i32>(1).zip(window_r.iter::<i32>(1))
-            {
-                if (pos as usize) < range.0 + 1000 { pos += 1; continue; }
+            for (p,r) in window.iter::<i32>(1).zip(window_r.iter::<i32>(1)) {
 
-                let correct_depth = if p == 0 { 0.0 } else { (r as f64) / (p as f64) } ;
+                let corrected_depth = if p == 0 { 0.0 } else { (r as f64) / (p as f64) };
 
-                if pos < variant.left_pos as u32 || pos > variant.right_pos as u32
-                {
-                    normal_depth_value.push(correct_depth);
-                }
-                else
-                {
-                    event_depth_value.push(correct_depth);
-                }
+                update(pos, corrected_depth);
 
                 pos += 1;
             }
 
+            return Ok(true);
+        }
+        return Ok(false);
+    }
+
+    /* This is the valildation based on the Read-Depth-Fragment-Depth correction
+     * It based on measuring how strange the event is compared to the nearby region
+     * Since the depth correction can cancel out most of the systematic bais, the average
+     * of the depth is assumed to be stable.
+     *
+     * Problem: This needs to revisit the bamfile and slow down the program 
+     */
+    fn pvalue_validation(&mut self, variant: &Variant) -> Result<f64,()>
+    {
+        let mut normal_depth_value = Vec::new();
+        let mut event_depth_value = Vec::new();
+        
+        let mut length = (variant.right_pos - variant.left_pos) * 100;
+
+        length = length.max(10000).min(100000).min(variant.left_pos);
+        
+        let range = (variant.left_pos - length, variant.right_pos + length);
+
+        if self.compute_fr_correction(range.0, range.1, |pos, cor| {
+            if pos >= range.0 + 1000 {
+                if pos < variant.left_pos || pos > variant.right_pos {
+                    normal_depth_value.push(cor);
+                } else {
+                    event_depth_value.push(cor);
+                }
+            }
+        })? {
             let fcmp = |a:&f64,b:&f64| a.partial_cmp(b).unwrap();
 
             normal_depth_value.sort_unstable_by(fcmp);
@@ -238,6 +265,45 @@ impl <'a, DM:DepthModel> EdgeDetector<'a, DM> {
             }
         }
         else { Ok(1.0) }
+    }
+
+    fn adjust_variant(&mut self, raw:Variant<'a> ) -> Option<Variant<'a>> {
+        let copy_num = raw.copy_num;
+        let ret = Some(raw);
+        
+        let mut result = match ret {
+            Some(mut variant) => if (0.5 * (copy_num as f64) - variant.mean).abs() < 0.2 { Some(variant) } else 
+            {
+                (|| {
+                    for copy_num in self.target_copy_num.iter()
+                    {
+                        if (0.5 * (*copy_num as f64) - variant.mean).abs() < 0.2 
+                        {
+                            variant.copy_num = *copy_num;
+                            return Some(variant);
+                        }
+                    }
+                    return None;
+                })()
+            }
+            None => None
+        };
+
+        /* P-Value validation */
+        if let Some(ref mut what) = result 
+        {
+            if what.copy_num < 2 
+            {
+                what.pv_score = self.pvalue_validation(what).unwrap_or(1.0);
+
+            }
+            /* TODO: implement the PV score validation for dups as well */
+        }
+        
+        if result.iter().fold(1.0, |_x,y| y.pv_score) < self.pv_threshold { result = None }
+
+        return result;
+
     }
 
     #[allow(dead_code)]
@@ -292,8 +358,7 @@ impl <'a, DM:DepthModel> EdgeDetector<'a, DM> {
                 }
             }
         }
-
-
+        
         if ret.is_some() &&
            (0.5 * (copy_num as f64) - ret.as_ref().unwrap().mean).abs() > 0.2
         {
@@ -324,38 +389,12 @@ impl <'a, DM:DepthModel> EdgeDetector<'a, DM> {
             }
         }
         
-        let mut result = match ret {
-            Some(mut variant) => if (0.5 * (copy_num as f64) - variant.mean).abs() < 0.2 { Some(variant) } else 
-            {
-                (|| {
-                    for copy_num in self.target_copy_num.iter()
-                    {
-                        if (0.5 * (*copy_num as f64) - variant.mean).abs() < 0.2 
-                        {
-                            variant.copy_num = *copy_num;
-                            return Some(variant);
-                        }
-                    }
-                    return None;
-                })()
-            }
-            None => None
+        let result = if ret.is_some() {
+            self.adjust_variant(ret.unwrap())
+        } else {
+            None
         };
-
-        /* P-Value validation */
-        if let Some(ref mut what) = result 
-        {
-            if what.copy_num < 2 
-            {
-                what.pv_score = self.pvalue_validation(what).unwrap_or(1.0);
-
-            }
-            /* TODO: implement the PV score validation for dups as well */
-        }
         
-        if result.iter().fold(1.0, |_x,y| y.pv_score) < self.pv_threshold { result = None }
-
-
         if retry && result.is_some() && result.as_ref().unwrap().pv_score < 0.0
         {
             let mut new_param = event.clone();
@@ -374,5 +413,7 @@ impl <'a, DM:DepthModel> EdgeDetector<'a, DM> {
         }
 
         return result;
+
+
     }
 }

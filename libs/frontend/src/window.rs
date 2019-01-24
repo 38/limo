@@ -83,6 +83,10 @@ impl <T> Window<T> where
     {
         WindowIter::new(self, win_size)
     }
+
+    pub fn size(&self) -> usize {
+        self.acc.len() - 1
+    }
 }
 
 pub struct WindowIter<'a, T, R : From<T>> where

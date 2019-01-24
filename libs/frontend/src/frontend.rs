@@ -62,6 +62,8 @@ impl <DM:DepthModel + Sized> Frontend<DM> {
 
     pub fn get_window_size(&self) -> u32 { self.window_size }
 
+    pub fn get_chrom_size(&self) -> u32 { self.scanner.chrom_size() }
+
     pub fn get_copy_nums(&self) -> &[u32] 
     {
         return &self.copy_nums[0..];

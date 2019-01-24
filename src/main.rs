@@ -1,17 +1,14 @@
+#![feature(core_intrinsics)]
 pub mod edge;
 pub mod task;
 
 use self::task::Task;
 use frontend::bamfile::BamFile;
-
 use clap::{App, load_yaml};
 use threadpool::ThreadPool;
 use regex::Regex;
 
 use std::str::FromStr;
-
-
-
 
 fn main() -> Result<(), ()>
 {
@@ -24,9 +21,8 @@ fn main() -> Result<(), ()>
     let window_size = u32::from_str_radix(matches.value_of("window-size").unwrap_or("300"), 10).unwrap();
     let alignment = matches.value_of("alignment-file").unwrap();
 
-    let nthreads = matches.value_of("threads").map(|s| usize::from_str_radix(s, 10).unwrap()).unwrap_or(1);
+    let mut nthreads = matches.value_of("threads").map(|s| usize::from_str_radix(s, 10).unwrap()).unwrap_or(1);
 
-    let tp = ThreadPool::new(nthreads);
 
     let include_pattern = Regex::new(matches.value_of("include").unwrap_or(r"^([Cc]hr)?[0-9XYxy]*$")).unwrap();
     let exclude_pattern = Regex::new(matches.value_of("exclude").unwrap_or(".^")).unwrap();
@@ -36,7 +32,11 @@ fn main() -> Result<(), ()>
         .map(|(idx, name)| {
             eprintln!("Matched target #{}:{}", idx, name);
             idx as u32
-        }).collect();
+        }).collect(); 
+
+    nthreads = nthreads.min(target_list.len());
+    
+    let tp = if nthreads > 1 { Some(ThreadPool::new(nthreads)) } else { None };
 
     for i in target_list.into_iter()
     {
@@ -53,10 +53,16 @@ fn main() -> Result<(), ()>
             pv_threshold: matches.value_of("prob-validate").map_or(0.2, |val| f64::from_str(val).unwrap())
         };
 
-        tp.execute(move || { task.run().expect("Failed"); });
+        if let Some(ref tp) = tp {
+            tp.execute(move || { task.run().expect("Failed"); });
+        } else {
+            task.run().expect("Failed");
+        }
     }
 
-    tp.join();
+    if let Some(ref tp) = tp {
+        tp.join();
+    }
 
     return Ok(()); 
 }

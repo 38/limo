@@ -1,13 +1,16 @@
 use crate::depth_model::DepthModel;
 use crate::frontend::{Event, FrontendIter, Frontend, Side};
 
+
 pub struct EventPairProc<'a, DM : DepthModel> {
     left_side: Vec<Option<Event<'a, DM>>>,
     last_pos : u32,
     recent   : Vec<Event<'a, DM>>,
     max_copy_num : u32,
     window_size: u32,
-    fe_iter  : FrontendIter<'a, DM>
+    fe_iter  : FrontendIter<'a, DM>,
+    chrom_size: u32,
+    last_mb: u32,
 }
 
 impl <'a, DM : DepthModel> EventPairProc<'a, DM> 
@@ -22,7 +25,9 @@ impl <'a, DM : DepthModel> EventPairProc<'a, DM>
             recent    : Vec::new(),
             max_copy_num,
             fe_iter   : fe.iter(),
-            window_size: fe.get_window_size()
+            window_size: fe.get_window_size(),
+            chrom_size: fe.get_chrom_size(),
+            last_mb: 0,
         };
     }
 }
@@ -38,6 +43,11 @@ impl <'a, DM : DepthModel> Iterator for EventPairProc<'a, DM>
             let next_event = self.fe_iter.next();
             if let Some(next_event) = next_event 
             {
+                if next_event.pos / 1000_0000 != self.last_mb {
+                    self.last_mb = next_event.pos / 1000_0000;
+                    eprintln!("Pairing model events: Chrom {}, {}MB/{}MB", next_event.chrom, self.last_mb * 10, self.chrom_size / 100_0000);
+                }
+
                 if next_event.copy_num > self.max_copy_num { continue; }
                 if self.recent.len() == 3 { self.recent.remove(0); }
                 self.recent.push(next_event);

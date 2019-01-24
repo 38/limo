@@ -10,7 +10,6 @@ pub mod models;
 pub mod frontend;
 pub mod event_pair;
 
-
 pub mod prelude {
     
     use crate::bamfile::BamFile;
@@ -34,8 +33,9 @@ pub mod prelude {
 
     fn save_scan_result(scanner:&Scanner, ir_path: &str) -> Result<(), ()>
     {
-        scanner.try_dump(&mut std::fs::File::create(ir_path).unwrap()).expect("cannot dump");
-
+        scanner.try_dump(&mut std::fs::File::create(ir_path).unwrap()).unwrap_or_else(|e| {
+            eprintln!("Unable to produce the scanner dump {:?}", e);
+        });
         return Ok(());
     }
 
@@ -44,7 +44,9 @@ pub mod prelude {
         use std::io::Write;
         for event in frontend.iter() 
         { 
-            write!(fp, "{:?}\n", event).expect("IO error"); 
+            write!(fp, "{:?}\n", event).unwrap_or_else(|e| {
+                eprintln!("Unable to dump the frontend events: {:?}", e);
+            });
         }
     }
 
@@ -54,7 +56,10 @@ pub mod prelude {
 
         for ep in event_pair
         {
-            write!(fp, "{}\t{}\t{}\t{}\n", ep.0.chrom, ep.0.pos, ep.1.pos, format!("ls:{:?};rs:{:?};cn:{}", ep.0.score, ep.1.score, ep.0.copy_num)).expect("IO error");
+            write!(fp, "{}\t{}\t{}\t{}\n", ep.0.chrom, ep.0.pos, ep.1.pos, format!("ls:{:?};rs:{:?};cn:{}", ep.0.score, ep.1.score, ep.0.copy_num))
+                .unwrap_or_else(|e| {
+                    eprintln!("Unable to dump the event pair {:?}", e);
+                });
         }
     }
 
@@ -69,6 +74,7 @@ pub mod prelude {
         {
             if self.fe_path.is_some()
             {
+                eprintln!("Dumping frontend result to file {}", self.fe_path.as_ref().unwrap()); 
                 let output = std::fs::File::create(self.fe_path.as_ref().unwrap().as_str());
                 dump_frontend_events(&self.frontend, &mut output.unwrap());
             }
@@ -77,6 +83,7 @@ pub mod prelude {
 
             if self.ep_path.is_some()
             {
+                eprintln!("Dumping event pair to file {}", self.ep_path.as_ref().unwrap());
                 let output = std::fs::File::create(self.ep_path.as_ref().unwrap().as_str());
                 dump_event_pairs(&event_pair, &mut output.unwrap());
             }

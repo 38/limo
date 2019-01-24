@@ -41,7 +41,8 @@ pub struct Scanner {
     raw_window       : Window<i32>,
     common_read_len     : u32,
     common_read_len_cnt : u32,
-    chrom               : Box<str>
+    chrom               : Box<str>,
+    size                : u32,
 }
 
 impl Scanner {
@@ -86,7 +87,6 @@ impl Scanner {
         return Ok(());
     }
 
-    #[allow(dead_code)]
     pub fn try_load<T:Read>(fp:&mut T) -> Result<Scanner, std::io::Error>
     {
         let mut header = [0u32;3];
@@ -99,14 +99,19 @@ impl Scanner {
         fp.read(&mut name_buf[0..])?;
 
         let name = std::str::from_utf8(&name_buf[0..]).unwrap();
+        let corrected_window = Window::<i32>::try_load(fp)?;
+        let low_mq_window = Window::<i32>::try_load(fp)?;
+        let raw_window = Window::<i32>::try_load(fp)?;
+        let size = corrected_window.size() as u32;
 
         return Ok(Scanner {
-            corrected_window: Window::<i32>::try_load(fp)?,
-            low_mq_window: Window::<i32>::try_load(fp)?,
-            raw_window: Window::<i32>::try_load(fp)?,
             common_read_len: header[1],
             common_read_len_cnt: header[2],
-            chrom : String::from(name).into_boxed_str()
+            chrom : String::from(name).into_boxed_str(),
+            corrected_window,
+            low_mq_window,
+            raw_window,
+            size,
         });
     }
 
@@ -122,7 +127,8 @@ impl Scanner {
             raw_window       : Window::<i32>::new(size),
             common_read_len  : 0,
             common_read_len_cnt: 0,
-            chrom            : String::from(bam.get_chrom()).into_boxed_str()
+            chrom            : String::from(bam.get_chrom()).into_boxed_str(),
+            size: size as u32,
         };
 
         for read in bam.try_iter()?
@@ -159,6 +165,10 @@ impl Scanner {
         }
 
         return Ok(ret);
+    }
+
+    pub fn chrom_size(&self) -> u32 {
+        self.size
     }
 }
 #[cfg(test)]

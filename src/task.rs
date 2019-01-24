@@ -1,6 +1,7 @@
 use std::cmp::{max,min};
 use frontend::prelude::*;
 use crate::edge::{EdgeDetector, Variant};
+
 pub struct Task {
     pub alignment: String,
     pub scanner_dump: String,
@@ -56,8 +57,8 @@ impl Task {
             }
             event_count += 1;
 
-            /*if ep.0.pos > 52870500 {
-                eprintln!("haha");
+            /*if ep.0.pos > 32532900 && ep.0.pos < 32533000 {
+                unsafe{ std::intrinsics::breakpoint(); }
             }*/
 
             edge_detect.detect_edge(ep, true).map(|x| { passed += 1; x })
@@ -99,30 +100,41 @@ impl Task {
                 {
                     if cluster.len() > 1 
                     {
-                        fn update<'a, 'b>(best:&'b Variant<'a>, sv:&'b Variant<'a>) -> &'b Variant<'a>
+                        fn update<'a, 'b>(best:&'b Variant<'a>, sv:&'b Variant<'a>, merged: bool) -> &'b Variant<'a>
                         {
-                            if (best.pv_score - sv.pv_score).abs() > 0.05 { 
+                            let pv_diff_thres_a = if merged { 0.15 } else { 0.005 };
+                            let pv_diff_thres_b = if merged { 0.005 } else { -1.0 };
+                            if (best.pv_score - sv.pv_score).abs() > pv_diff_thres_a { 
                                 if best.pv_score < sv.pv_score { return sv; }
                             } else if best.boundary != sv.boundary {
                                 if !best.boundary { return sv; }
-                            } else if ((best.mean - 0.5 * best.copy_num as f64).abs() - (sv.mean - 0.5 * sv.copy_num as f64).abs()).abs() > 0.05 { 
+                            } else if (best.pv_score - sv.pv_score).abs() > pv_diff_thres_b { 
+                                if best.pv_score < sv.pv_score { return sv; }
+                            }  else if ((best.mean - 0.5 * best.copy_num as f64).abs() - (sv.mean - 0.5 * sv.copy_num as f64).abs()).abs() > 0.005 { 
                                 if (best.mean - 0.5 * best.copy_num as f64).abs() > (sv.mean - 0.5 * sv.copy_num as f64).abs() { return sv; }
-                            } else if (best.sd - sv.sd).abs() > 0.05 
-                            {
+                            } else if (best.sd - sv.sd).abs() > 0.005 {
                                 if best.sd > sv.sd { return sv; }
                             }
                             return best;
                         };
 
                         /* Option 1: Select a best SV from the cluster */
-                        let best = cluster.iter().skip(1).fold(cluster[0], |a,b| update(a, *b));
+                        let best = cluster.iter().skip(1).fold(cluster[0], |a,b| update(a, *b, false));
 
                         /* Option 2: Merge all the SV in the cluster */
                         let event_pair = make_linear_event(cluster[0].chrom, cluster[0].left_pos, cluster[cluster.len()-1].right_pos, best.copy_num);
                         let cluster_event = edge_detect.detect_edge(&event_pair, true);
-                        let best = cluster_event.iter().fold(best, |a, x| update(a, &x));
+                        let mut best = cluster_event.iter().fold(best, |a, x| update(a, &x, true)).clone();
+                        
+                        /* Option 3: Also, it's possible we are in the middle of a huge event */
+                        if cluster[cluster.len()-1].right_pos - cluster[0].left_pos > 5000 {
+                            let mut event_pair = make_linear_event(cluster[0].chrom, cluster[0].left_pos, cluster[cluster.len()-1].right_pos, best.copy_num);
+                            if let Some(ret) = edge_detect.extend_region(&mut event_pair, 2000) {
+                                best = update(&best, &ret, true).clone();
+                            }
+                        }
 
-                        result.push(best.clone());
+                        result.push(best);
                     }
                     else 
                     {
