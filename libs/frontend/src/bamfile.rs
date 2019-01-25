@@ -4,6 +4,8 @@ use std::ptr::{null_mut, null};
 use std::ops::Index;
 use std::slice::from_raw_parts;
 
+use log::error;
+
 #[allow(dead_code)]
 pub struct Alignment<'a> {
     data : &'a bam1_t
@@ -299,7 +301,7 @@ impl BamFile {
 
         if fp == null_mut() 
         {
-            eprintln!("Cannot open the alignment file");
+            error!("Cannot open the alignment file");
             return Err(());
         }
 
@@ -326,7 +328,7 @@ impl BamFile {
 
         if fp == null_mut() 
         {
-            eprintln!("Cannot open the alignment file");
+            error!("Cannot open the alignment file");
             return Err(());
         }
 
@@ -334,7 +336,7 @@ impl BamFile {
         {
             if unsafe{ hts_set_fai_filename(fp, CString::new(reference.unwrap()).unwrap().as_ptr()) } < 0
             {
-                eprintln!("Cannot find the reference file.");
+                error!("Cannot find the reference file.");
                 return Err(());
             }
         }
@@ -343,7 +345,7 @@ impl BamFile {
 
         if hdr == null_mut()
         {
-            eprintln!("Cannot read the header from the alignment file");
+            error!("Cannot read the header from the alignment file");
             return Err(());
         }
 
@@ -351,7 +353,7 @@ impl BamFile {
 
         if idx == null_mut()
         {
-            eprintln!("Cannot load the index file, please generate the index file");
+            error!("Cannot load the index file, please generate the index file");
             return Err(());
         }
 

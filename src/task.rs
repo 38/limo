@@ -2,6 +2,8 @@ use std::cmp::{max,min};
 use frontend::prelude::*;
 use crate::edge::{EdgeDetector, Variant};
 
+use log::{info, debug};
+
 pub struct Task {
     pub alignment: String,
     pub scanner_dump: String,
@@ -38,17 +40,19 @@ impl Task {
 
 
         let frontend_ctx = run_linear_frontend(frontend_param.clone())?;
+        
+        let  chrom_name = frontend_ctx.get_chrom_name();
 
-        eprintln!("Constructing event detection context for chrom {}", frontend_param.chrom);
+        debug!("Chrom {}: Constructing event detection context", chrom_name);
 
         let mut edge_detect = EdgeDetector::new(&frontend_ctx.frontend, frontend_ctx.frontend.get_scan_size() * 2, &frontend_param.copy_nums[0..], prob_args);
         
         let mut events:Vec<_> = if self.load_events.is_none() {
 
-            eprintln!("Collecting event pairs for chromosome #{}", frontend_param.chrom);
+            info!("Chrom {}: Collecting event pair", chrom_name);
             let event_pair = frontend_ctx.get_result();
             
-            eprintln!("Post processing the poped events: Chromosome: {}", frontend_param.chrom);
+            info!("Chrom {}: Post processing the paired events", chrom_name);
             let report_unit = 10000000;
             let total_mb = event_pair.last().iter().fold(0, |_, e| e.0.pos) / 1000000;
             let mut last_mb = report_unit;
@@ -57,7 +61,7 @@ impl Task {
 
             event_pair.iter().filter_map(|ep| {
                 if ep.0.pos > last_mb {
-                    eprintln!("Postprocessed: Chromosome:{}, Offset:{}MB/{}MB, FE_Events:{}, Passed:{}", ep.0.chrom, last_mb/1000000, total_mb, event_count, passed);
+                    debug!("Chrom {}: Postprocess - Offset:{}MB/{}MB, FE_Events:{}, Passed:{}", ep.0.chrom, last_mb/1000000, total_mb, event_count, passed);
                     last_mb = ((ep.0.pos + report_unit - 1) / report_unit) * report_unit;
                 }
                 event_count += 1;
@@ -69,7 +73,7 @@ impl Task {
         };
 
         let events = if self.cluster_merge {
-            eprintln!("Merging the clustered events: Chromosome: #{}", frontend_param.chrom);
+            info!("Chrom {}: Merging the clustered events", chrom_name);
             events.sort_by(|a,b| a.left_pos.cmp(&b.left_pos));
             let mut cluster_range = (0,0);
             let mut cluster = Vec::<&Variant>::new();
@@ -165,6 +169,8 @@ impl Task {
         {
             println!("{}\t{}\t{}\t{}", sv.chrom, sv.left_pos, sv.right_pos, sv.json_repr());
         }
+
+        info!("Chrom {}: Done", chrom_name);
 
         return Ok(());
     }

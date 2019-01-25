@@ -7,3 +7,6 @@ edition = "2018"
 [build-dependencies]
 bindgen = "*"
 num_cpus = "*"
+
+[dependencies]
+log = "*"

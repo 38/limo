@@ -10,6 +10,11 @@ pub mod models;
 pub mod frontend;
 pub mod event_pair;
 
+
+pub fn get_module_path() -> &'static str {
+    module_path!()
+}
+
 pub mod prelude {
     
     use crate::bamfile::BamFile;
@@ -18,6 +23,8 @@ pub mod prelude {
     use crate::scanner::Scanner;
     use crate::event_pair::EventPairProc;
     use crate::depth_model::DepthModel;
+    
+    use log::{error, debug};
 
     #[derive(Clone)]
     pub struct FrontendParam<'a> {
@@ -34,7 +41,7 @@ pub mod prelude {
     fn save_scan_result(scanner:&Scanner, ir_path: &str) -> Result<(), ()>
     {
         scanner.try_dump(&mut std::fs::File::create(ir_path).unwrap()).unwrap_or_else(|e| {
-            eprintln!("Unable to produce the scanner dump {:?}", e);
+            error!("Unable to produce the scanner dump {:?}", e);
         });
         return Ok(());
     }
@@ -45,7 +52,7 @@ pub mod prelude {
         for event in frontend.iter() 
         { 
             write!(fp, "{:?}\n", event).unwrap_or_else(|e| {
-                eprintln!("Unable to dump the frontend events: {:?}", e);
+                error!("Unable to dump the frontend events: {:?}", e);
             });
         }
     }
@@ -58,7 +65,7 @@ pub mod prelude {
         {
             write!(fp, "{}\t{}\t{}\t{}\n", ep.0.chrom, ep.0.pos, ep.1.pos, format!("ls:{:?};rs:{:?};cn:{}", ep.0.score, ep.1.score, ep.0.copy_num))
                 .unwrap_or_else(|e| {
-                    eprintln!("Unable to dump the event pair {:?}", e);
+                    error!("Unable to dump the event pair {:?}", e);
                 });
         }
     }
@@ -74,7 +81,7 @@ pub mod prelude {
         {
             if self.fe_path.is_some()
             {
-                eprintln!("Dumping frontend result to file {}", self.fe_path.as_ref().unwrap()); 
+                debug!("Chrom {}: Dumping frontend result to file {}", self.get_chrom_name(), self.fe_path.as_ref().unwrap()); 
                 let output = std::fs::File::create(self.fe_path.as_ref().unwrap().as_str());
                 dump_frontend_events(&self.frontend, &mut output.unwrap());
             }
@@ -83,12 +90,16 @@ pub mod prelude {
 
             if self.ep_path.is_some()
             {
-                eprintln!("Dumping event pair to file {}", self.ep_path.as_ref().unwrap());
+                debug!("Chrom {}: Dumping event pair to file {}", self.get_chrom_name(), self.ep_path.as_ref().unwrap());
                 let output = std::fs::File::create(self.ep_path.as_ref().unwrap().as_str());
                 dump_event_pairs(&event_pair, &mut output.unwrap());
             }
 
             event_pair
+        }
+
+        pub fn get_chrom_name(&self) -> &str {
+            return self.frontend.get_scanner().get_chrom();
         }
     }
 
@@ -98,7 +109,7 @@ pub mod prelude {
 
         let scanner = if param.no_scanner_dump || !std::path::Path::new(&ir_path[0..]).exists()
         {
-            eprintln!("Scanner dump is not available, load data from the alignment file: {} chromsome: {}", param.alignment, param.chrom);
+            debug!("Scanner dump is not available, load data from the alignment file: {} chromsome: {}", param.alignment, param.chrom);
             let bam = BamFile::new(param.alignment, param.chrom, None)?;
             let scanner = Scanner::new(&bam)?;
             if !param.no_scanner_dump { save_scan_result(&scanner, &ir_path[0..])?; }
@@ -106,7 +117,7 @@ pub mod prelude {
         }
         else
         {
-            eprintln!("Loading depth information from scanner dump for file: {} chromsome: {}", param.alignment, param.chrom);
+            debug!("Loading depth information from scanner dump for file: {} chromsome: {}", param.alignment, param.chrom);
             Scanner::try_load(&mut std::fs::File::open(ir_path).unwrap()).expect("Cannot load")
         };
     

@@ -1,6 +1,6 @@
 use crate::depth_model::DepthModel;
 use crate::frontend::{Event, FrontendIter, Frontend, Side};
-
+use log::debug;
 
 pub struct EventPairProc<'a, DM : DepthModel> {
     left_side: Vec<Option<Event<'a, DM>>>,
@@ -45,7 +45,7 @@ impl <'a, DM : DepthModel> Iterator for EventPairProc<'a, DM>
             {
                 if next_event.pos / 1000_0000 != self.last_mb {
                     self.last_mb = next_event.pos / 1000_0000;
-                    eprintln!("Pairing model events: Chrom {}, {}MB/{}MB", next_event.chrom, self.last_mb * 10, self.chrom_size / 100_0000);
+                    debug!("Chrom {}: Pairing model events - {}MB/{}MB", next_event.chrom, self.last_mb * 10, self.chrom_size / 100_0000);
                 }
 
                 if next_event.copy_num > self.max_copy_num { continue; }

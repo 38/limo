@@ -1,6 +1,7 @@
 #![feature(core_intrinsics)]
-pub mod edge;
-pub mod task;
+mod edge;
+mod task;
+
 
 use self::task::Task;
 use frontend::bamfile::BamFile;
@@ -9,6 +10,8 @@ use threadpool::ThreadPool;
 use regex::Regex;
 
 use std::str::FromStr;
+
+use log::{info,debug};
 
 fn main() -> Result<(), ()>
 {
@@ -27,14 +30,24 @@ fn main() -> Result<(), ()>
     let include_pattern = Regex::new(matches.value_of("include").unwrap_or(r"^([Cc]hr)?[0-9XYxy]*$")).unwrap();
     let exclude_pattern = Regex::new(matches.value_of("exclude").unwrap_or(".^")).unwrap();
 
+    stderrlog::new()
+        .module(module_path!())
+        .module(frontend::get_module_path())
+        .verbosity(3)
+        .timestamp(stderrlog::Timestamp::Second)
+        .init()
+        .expect("Unable to initialize logging");
+
     let target_list:Vec<_> = BamFile::list_chromosomes(alignment)?.into_iter().enumerate()
         .filter(|(_, name)| include_pattern.is_match(&name) && !exclude_pattern.is_match(&name))
         .map(|(idx, name)| {
-            eprintln!("Matched target #{}:{}", idx, name);
+            debug!("Selected chromosome id={} name={}", idx, name);
             idx as u32
         }).collect(); 
 
     nthreads = nthreads.min(target_list.len());
+
+    info!("Starting {} threads for {} chroms", nthreads, target_list.len());
     
     let tp = if nthreads > 1 { Some(ThreadPool::new(nthreads)) } else { None };
 
